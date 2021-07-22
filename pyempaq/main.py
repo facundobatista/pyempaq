@@ -50,7 +50,7 @@ def get_pip():  # ToDo: test!
     return useful_pip
 
 
-def pack(project_name, basedir, entrypoint, requirement_files):  # ToDo: test!
+def pack(config):  # ToDo: test!
     """Pack."""
     # ToDo: show all DEBUG lines only on "verbose" (with logger.debug)
     tmpdir = pathlib.Path(tempfile.mkdtemp())
@@ -58,12 +58,12 @@ def pack(project_name, basedir, entrypoint, requirement_files):  # ToDo: test!
 
     # copy all the project content inside "orig" in temp dir
     origdir = tmpdir / "orig"
-    shutil.copytree(basedir, origdir)
+    shutil.copytree(config.basedir, origdir)
 
     # copy the unpacker as the entry point of the zip
+    unpacker_src = pathlib.Path(__file__).parent / "unpacker.py"
     unpacker_final_main = tmpdir / "__main__.py"
-    # ToDo: find the unpacker relatively to this code
-    shutil.copy("poc_unpacker.py", unpacker_final_main)
+    shutil.copy(unpacker_src, unpacker_final_main)
 
     # build a dir with the dependencies needed by the unpacker
     print("DEBUG packer: building internal dependencies dir")
@@ -75,16 +75,16 @@ def pack(project_name, basedir, entrypoint, requirement_files):  # ToDo: test!
     # store the needed metadata
     print("DEBUG packer: saving metadata")
     metadata = {
-        "entrypoint": str(entrypoint),
-        "requirement_files": [str(path) for path in requirement_files],
-        "project_name": project_name,
+        "entrypoint": str(config.entrypoint),
+        "requirement_files": [str(path) for path in config.requirement_files],
+        "project_name": config.project_name,
     }
     metadata_file = tmpdir / "metadata.json"
     with metadata_file.open("wt", encoding="utf8") as fh:
         json.dump(metadata, fh)
 
     # create the zipfile
-    packed_filepath = f"{project_name}.pyz"
+    packed_filepath = f"{config.project_name}.pyz"
     zipapp.create_archive(tmpdir, packed_filepath)
 
     # clean the temporary directory
