@@ -2,6 +2,8 @@
 # Licensed under the GPL v3 License
 # For further info, check https://github.com/facundobatista/pyempaq
 
+"""Main packer module."""
+
 import argparse
 import json
 import pathlib
@@ -130,7 +132,7 @@ def process_args(args):
 
 
 def main():
-    """Main entry point."""
+    """Manage CLI interaction and call pack."""
     # ToDo: refactor source of information
     # *one* parameter, mandatory;
     # - to pyempaq.yaml

@@ -1,3 +1,9 @@
+# Copyright 2021 Facundo Batista
+# Licensed under the GPL v3 License
+# For further info, check https://github.com/facundobatista/pyempaq
+
+"""Unpacking functionality.."""
+
 import json
 import os
 import pathlib
