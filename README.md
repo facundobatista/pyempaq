@@ -6,7 +6,7 @@ With PyEmpaq you can convert any Python project (see limitations below) in a sin
 
 That single file is everything that needs to be distributed. When the final user executes it, the original project will be expanded, its dependencies installed in a virtualenv, and then it will be executed.
 
-Both the packaging and the execution are fully multiplatorm. This means that you can pack a project in Linux, or Windows, or whatever, and it will run ok in Linux, Windows, or whatever.
+Both the packaging and the execution are fully multiplatorm. This means that you can pack a project in Linux, Windows, Mac or whatever, and it will run ok in Linux, Windows, Mac or whatever.
 
 
 ### How does this work?
