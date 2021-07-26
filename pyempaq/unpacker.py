@@ -97,6 +97,7 @@ else:
 python_exec = get_python_exec(project_dir)
 log("Running payload using {!r}", python_exec)
 os.chdir(original_project_dir)
+# ToDo: pass the rest of the sysargs to the payload project here
 cmd = [python_exec, metadata["entrypoint"]]
 subprocess.run(cmd)
 log("Pyempaq done")

@@ -157,3 +157,5 @@ def main():
         exit(1)
 
     pack(processed_args)
+    # ToDo: the pyempaq.yaml could point to setup.py
+    # ToDo: we need a key in pyempaq.yamml to indicate the files to include

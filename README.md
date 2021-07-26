@@ -2,7 +2,73 @@
 
 A simple but powerful Python packer to run any project with any virtualenv dependencies anywhwere.
 
-**FIXME**: explain the idea more descriptive. Include multiplatorm capabilities (pack and run in linux and windows and between them).
+With PyEmpaq you can convert any Python project (see limitations below) in a single `.pyz` file with everything packed inside. 
+
+That single file is everything that needs to be distributed. When the final user executes it, the original project will be expanded, its dependencies installed in a virtualenv, and then it will be executed.
+
+Both the packaging and the execution are fully multiplatorm. This means that you can pack a project in Linux, or Windows, or whatever, and it will run ok in Linux, Windows, or whatever.
+
+
+### How does this work?
+
+There are two phases: packing and execution. 
+
+The **packing** is run by the project developer, once, before distribution. It's a simple step where the developer runs PyEmpaq indicating all needed info, and PyEmpaq will produce a single `<projectname>.pyz` file. That's all, and that only file is what is needed for distribution.
+
+In this packing phase, PyEmpaq builds the indicated packed file, putting inside:
+
+- the payload project, with all the indicated modules and binary files (currently *everything*, but this will be improved in the future)
+
+- an *unpacker* script from PyEmpaq, which will be run during the execution phase
+
+- a little more needed infrastructure details for the `.pyz` to run correctly
+
+After packing, the developer will distribute the packed file, final users will download/receive/get it, and execute it.
+
+To execute it, all that needs to be done is to run it using Python, which can be done from the command line (e.g. `python3 supergame.pyz`) or by doing double click from the file explorer in those systems that relate the `.pyz` extension to Python (e.g. Windows).
+
+In this execution phase, the *unpacker* script put by PyEmpaq inside the packed file will be run, doing the following steps:
+
+- will check if has needed setup from a previous run; if yes, it will just run the payload project with almost no extra work; otherwise...
+
+- will create a directory in the user data dir, and expand the `.pyz` file there
+
+- will create a virtualenv in that new directory, and install all the payload's project dependencies
+
+- will run the payload's project inside that virtualenv
+
+The verification that the unpacker does to see if has a reusable setup from the past is based on the `.pyz` timestamp; if it changed (a new file was distributed), a new setup will be created and used.
+
+
+### Command line options
+
+**Note**: in the future we will migrate to a more expresive `pyempaq.yaml` config for the project, which will declare this variables and others, and will not use command line arguments to specify them.
+
+These are the current options:
+
+- `basedir`: the root of the project's directory tree
+- `entrypoint`: what to execute to start the project
+- `--requirement`: (optional, can be specified multiple times) the requirements file with the project's dependencies
+
+
+### The configuration file
+
+*(We don't have one YET, currently all options are indicated through command line, but will migrate to having a config file soon.)*
+
+
+### Limitations:
+
+There are some limitations, though:
+
+- Only Python >= 3.6 is supported
+
+- Only Linux, Windows and Mac is supported
+
+- Only pip-installable dependencies are supported.
+
+- Only dependencies that are pure Python or provide wheels are supported.
+
+If you have any ideas on how to overcome any of these limitations, let's talk!
 
 
 ## A simple try for the example

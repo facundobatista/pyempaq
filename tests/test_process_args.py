@@ -45,7 +45,7 @@ def test_basedir_missing(tmp_path):
     args = Namespace(basedir=basedir, entrypoint=None, requirement=None)
     with pytest.raises(ArgumentsError) as cm:
         process_args(args)
-    assert str(cm.value) == f"Cannot find the base directory: '{basedir}'."
+    assert str(cm.value) == f"Cannot find the base directory: {str(basedir)!r}."
 
 
 def test_entrypoint_missing(tmp_path):
@@ -54,7 +54,7 @@ def test_entrypoint_missing(tmp_path):
     args = Namespace(basedir=tmp_path, entrypoint=entrypoint, requirement=None)
     with pytest.raises(ArgumentsError) as cm:
         process_args(args)
-    assert str(cm.value) == f"Cannot find the entrypoint: '{entrypoint}'."
+    assert str(cm.value) == f"Cannot find the entrypoint: {str(entrypoint)!r}."
 
 
 def test_entrypoint_outside_basedir(tmp_path):
@@ -67,7 +67,7 @@ def test_entrypoint_outside_basedir(tmp_path):
     with pytest.raises(ArgumentsError) as cm:
         process_args(args)
     assert str(cm.value) == (
-        f"The entrypoint '{entrypoint}' must be inside the project '{basedir}'.")
+        f"The entrypoint {str(entrypoint)!r} must be inside the project {str(basedir)!r}.")
 
 
 def test_entrypoint_deep_inside(tmp_path):
@@ -88,7 +88,7 @@ def test_requirement_missing(tmp_path):
     args = Namespace(basedir=tmp_path, entrypoint=entrypoint, requirement=[req])
     with pytest.raises(ArgumentsError) as cm:
         process_args(args)
-    assert str(cm.value) == f"Cannot find the requirement file: '{req}'."
+    assert str(cm.value) == f"Cannot find the requirement file: {str(req)!r}."
 
 
 def test_requirement_outside_basedir(tmp_path):
@@ -102,4 +102,5 @@ def test_requirement_outside_basedir(tmp_path):
     args = Namespace(basedir=basedir, entrypoint=entrypoint, requirement=[req])
     with pytest.raises(ArgumentsError) as cm:
         process_args(args)
-    assert str(cm.value) == f"The requirement file '{req}' must be inside the project '{basedir}'."
+    assert str(cm.value) == (
+        f"The requirement file {str(req)!r} must be inside the project {str(basedir)!r}.")
