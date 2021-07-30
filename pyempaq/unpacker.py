@@ -33,6 +33,8 @@ def log(template, *args):
     """Print debug lines if proper envvar is present."""
     # ToDo: only log if STOWER_DEBUG=1
     print("::pyempaq::", template.format(*args))
+    # ToDo: the unpacker should show this info to stderr only if a terminal is there; also, if
+    # a window system is available and not a terminal, show process with Tkinter? (if available!)
 
 
 def get_python_exec(project_dir):

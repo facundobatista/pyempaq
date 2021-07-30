@@ -8,6 +8,13 @@ That single file is everything that needs to be distributed. When the final user
 
 Both the packaging and the execution are fully multiplatorm. This means that you can pack a project in Linux, Windows, Mac or whatever, and it will run ok in Linux, Windows, Mac or whatever.
 
+# FIXME
+
+Create three examples here:
+- something pure terminal, very small, like a fortune cookie teller
+- a game with arcade
+- Encuentro with Qt
+
 
 ### How does this work?
 

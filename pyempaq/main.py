@@ -86,6 +86,7 @@ def pack(config):  # ToDo: test!
     # create the zipfile
     packed_filepath = f"{config.project_name}.pyz"
     zipapp.create_archive(tmpdir, packed_filepath)
+    # ToDo: check if we can put a shebang here inside somehow
 
     # clean the temporary directory
     shutil.rmtree(tmpdir)
