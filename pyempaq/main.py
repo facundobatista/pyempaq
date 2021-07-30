@@ -42,7 +42,7 @@ def get_pip():  # ToDo: test!
     """Ensure an usable version of `pip`."""
     useful_pip = pathlib.Path("pip")
     # try to see if it's already installed
-    proc = subprocess.run([useful_pip, "--version"])
+    proc = subprocess.run([str(useful_pip), "--version"])
     if proc.returncode != 0:
         tmpdir = pathlib.Path(tempfile.mkdtemp())
         venv.create(tmpdir, with_pip=True)
@@ -69,7 +69,7 @@ def pack(config):  # ToDo: test!
     print("DEBUG packer: building internal dependencies dir")
     venv_dir = tmpdir / "venv"
     pip = get_pip()
-    cmd = [pip, "install", "appdirs", f"--target={venv_dir}"]
+    cmd = [str(pip), "install", "appdirs", f"--target={venv_dir}"]
     subprocess.run(cmd, check=True)  # ToDo: absorb outputs
 
     # store the needed metadata

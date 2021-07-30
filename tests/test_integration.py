@@ -51,7 +51,8 @@ def test_basic_cycle_full(tmp_path):
         "PYTHONPATH": os.getcwd(),
     }
     cmd = [
-        "python3", "-m", "pyempaq", projectpath, entrypoint, "--requirement={}".format(reqspath)]
+        "python3", "-m", "pyempaq",
+        str(projectpath), str(entrypoint), "--requirement={}".format(reqspath)]
     os.chdir(projectpath)
     subprocess.run(cmd, check=True, env=env)
     packed_filepath = projectpath / "projectname.pyz"
