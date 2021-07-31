@@ -65,7 +65,7 @@ def test_basic_cycle_full(tmp_path):
     packed_filepath.rename(cleandir / "projectname.pyz")
     os.chdir(cleandir)
     cmd = [sys.executable, "projectname.pyz"]
-    proc = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, text=True)
+    proc = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, universal_newlines=True)
     output_lines = proc.stdout.split("\n")
 
     # verify output
