@@ -42,19 +42,22 @@ def find_venv_bin(basedir, exec_base):  # ToDo: move this to a common place   # 
     raise RuntimeError(f"Binary not found inside venv; subdirs: {list(basedir.iterdir())}")
 
 
-def logged_exec(cmd):
+def logged_exec(cmd):  # ToDo: test!
     """Execute a command, redirecting the output to the log."""
     # ToDo: show all this only in verbose
-    cmd = map(str, cmd)
+    cmd = list(map(str, cmd))
     print(f"Executing external command: {cmd}")
-    p = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    try:
+        proc = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    except Exception as err:
+        raise ExecutionError(f"Command {cmd} crashed with {err!r}")
     stdout = []
-    for line in p.stdout:
+    for line in proc.stdout:
         line = line[:-1]
         stdout.append(line)
         print(f":: {line}")
-    retcode = p.wait()
+    retcode = proc.wait()
     if retcode:
         raise ExecutionError(f"Command {cmd} ended with retcode {retcode}")
     return stdout

@@ -30,8 +30,8 @@ def test_get_pip_installed_python2(tmp_path):
     assert useful_pip == tmp_path / "bin" / "pip"  # from inside a venv
 
 
-def test_get_pip_not_installed(tmp_path):
-    """An already installed pip is not found."""
+def test_get_pip_failing_pip(tmp_path):
+    """An already installed pip is failing."""
     with patch("pyempaq.main.logged_exec") as mock_exec:
         with patch("tempfile.mkdtemp") as mock_tempdir:
             mock_exec.side_effect = ExecutionError("pumba")
