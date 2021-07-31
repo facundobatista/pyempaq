@@ -48,9 +48,8 @@ def test_basic_cycle_full(tmp_path):
     reqspath.write_text("requests")
 
     # pack it calling current pyempaq externally
-    env = {
-        "PYTHONPATH": os.getcwd(),
-    }
+    env = dict(os.environ)  # need to replicate original env because of Windows
+    env["PYTHONPATH"] = os.getcwd()
     cmd = [
         sys.executable, "-m", "pyempaq",
         str(projectpath), str(entrypoint), "--requirement={}".format(reqspath)]

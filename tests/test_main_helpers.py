@@ -27,7 +27,8 @@ def test_get_pip_installed_python2(tmp_path):
             mock_exec.return_value = [pip_version]
             mock_tempdir.return_value = str(tmp_path)
             useful_pip = get_pip()
-    assert useful_pip == tmp_path / "bin" / "pip"  # from inside a venv
+    # from inside a venv
+    assert useful_pip == tmp_path / "bin" / "pip" or useful_pip == tmp_path / "Scripts" / "pip.exe"
 
 
 def test_get_pip_failing_pip(tmp_path):
@@ -37,4 +38,5 @@ def test_get_pip_failing_pip(tmp_path):
             mock_exec.side_effect = ExecutionError("pumba")
             mock_tempdir.return_value = tmp_path
             useful_pip = get_pip()
-    assert useful_pip == tmp_path / "bin" / "pip"  # from inside a venv
+    # from inside a venv
+    assert useful_pip == tmp_path / "bin" / "pip" or useful_pip == tmp_path / "Scripts" / "pip.exe"
