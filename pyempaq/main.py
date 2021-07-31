@@ -77,6 +77,8 @@ def get_pip():
 
     # no useful pip found, let's create a virtualenv and use the one inside
     tmpdir = pathlib.Path(tempfile.mkdtemp())
+    print("======== tmpdir", repr(tmpdir))
+    print("======== ok?", tmpdir.exists())
     venv.create(tmpdir, with_pip=True)
     useful_pip = find_venv_bin(tmpdir, "pip")
     return useful_pip

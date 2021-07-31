@@ -6,6 +6,7 @@
 
 import os
 import subprocess
+import sys
 import textwrap
 
 
@@ -51,7 +52,7 @@ def test_basic_cycle_full(tmp_path):
         "PYTHONPATH": os.getcwd(),
     }
     cmd = [
-        "python3", "-m", "pyempaq",
+        sys.executable, "-m", "pyempaq",
         str(projectpath), str(entrypoint), "--requirement={}".format(reqspath)]
     os.chdir(projectpath)
     subprocess.run(cmd, check=True, env=env)
@@ -63,7 +64,7 @@ def test_basic_cycle_full(tmp_path):
     cleandir.mkdir()
     packed_filepath.rename(cleandir / "projectname.pyz")
     os.chdir(cleandir)
-    cmd = ["python3", "projectname.pyz"]
+    cmd = [sys.executable, "projectname.pyz"]
     proc = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, text=True)
     output_lines = proc.stdout.split("\n")
 
