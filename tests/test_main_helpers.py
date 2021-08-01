@@ -5,6 +5,7 @@
 """Tests for some main helpers."""
 
 import pathlib
+import sys
 from unittest.mock import patch
 
 import pytest
@@ -24,6 +25,7 @@ def test_get_pip_installed_useful(version):
     assert useful_pip == pathlib.Path("pip3")
 
 
+@pytest.mark.skipif(sys.platform.startswith("win"), reason="venv.create not working in GA Windows")
 def test_get_pip_failing_pip(tmp_path):
     """An already installed pip is failing."""
     with patch("pyempaq.main.logged_exec") as mock_exec:
