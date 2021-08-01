@@ -64,7 +64,15 @@ def test_basic_cycle_full(tmp_path):
     packed_filepath.rename(cleandir / "projectname.pyz")
     os.chdir(cleandir)
     cmd = [sys.executable, "projectname.pyz"]
-    proc = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, universal_newlines=True)
+    print("============ bases??", (sys.prefix, sys.base_prefix))
+    try:
+        proc = subprocess.run(
+            cmd, check=True,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    except Exception:
+        for line in proc.stdout.split("\n"):
+            print("=========+++ERROR", line)
+        raise
     output_lines = proc.stdout.split("\n")
 
     # verify output
