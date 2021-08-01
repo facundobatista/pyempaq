@@ -23,6 +23,10 @@ class ArgumentsError(Exception):
     """Flag an error with the given arguments."""
 
 
+class ExecutionError(Exception):
+    """The subprocess didn't finish ok."""
+
+
 def find_venv_bin(basedir, exec_base):  # ToDo: move this to a common place   # ToDo: test!
     """Heuristics to find the pip executable in different platforms."""
     bin_dir = basedir / "bin"
@@ -33,20 +37,48 @@ def find_venv_bin(basedir, exec_base):  # ToDo: move this to a common place   # 
     bin_dir = basedir / "Scripts"
     if bin_dir.exists():
         # windows environment
-        return bin_dir / "{}.exe".format(exec_base)
+        return bin_dir / f"{exec_base}.exe"
 
-    raise RuntimeError("Binary not found inside venv; subdirs: {}".format(list(basedir.iterdir())))
+    raise RuntimeError(f"Binary not found inside venv; subdirs: {list(basedir.iterdir())}")
 
 
-def get_pip():  # ToDo: test!
+def logged_exec(cmd):  # ToDo: test!
+    """Execute a command, redirecting the output to the log."""
+    # ToDo: show all this only in verbose
+    cmd = list(map(str, cmd))
+    print(f"Executing external command: {cmd}")
+    try:
+        proc = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    except Exception as err:
+        raise ExecutionError(f"Command {cmd} crashed with {err!r}")
+    stdout = []
+    for line in proc.stdout:
+        line = line[:-1]
+        stdout.append(line)
+        print(f":: {line}")
+    retcode = proc.wait()
+    if retcode:
+        raise ExecutionError(f"Command {cmd} ended with retcode {retcode}")
+    return stdout
+
+
+def get_pip():
     """Ensure an usable version of `pip`."""
-    useful_pip = pathlib.Path("pip")
+    useful_pip = pathlib.Path("pip3")
     # try to see if it's already installed
-    proc = subprocess.run([useful_pip, "--version"])
-    if proc.returncode != 0:
-        tmpdir = pathlib.Path(tempfile.mkdtemp())
-        venv.create(tmpdir, with_pip=True)
-        useful_pip = find_venv_bin(tmpdir, "pip")
+    try:
+        logged_exec([useful_pip, "--version"])
+    except ExecutionError:
+        # failed to find a runnable pip, we need to install one
+        pass
+    else:
+        return useful_pip
+
+    # no useful pip found, let's create a virtualenv and use the one inside
+    tmpdir = pathlib.Path(tempfile.mkdtemp())
+    venv.create(tmpdir, with_pip=True)
+    useful_pip = find_venv_bin(tmpdir, "pip3")
     return useful_pip
 
 
@@ -54,7 +86,7 @@ def pack(config):  # ToDo: test!
     """Pack."""
     # ToDo: show all DEBUG lines only on "verbose" (with logger.debug)
     tmpdir = pathlib.Path(tempfile.mkdtemp())
-    print("DEBUG packer: working in temp dir {!r}".format(str(tmpdir)))
+    print(f"DEBUG packer: working in temp dir {str(tmpdir)!r}")
 
     # copy all the project content inside "orig" in temp dir
     origdir = tmpdir / "orig"
@@ -70,7 +102,7 @@ def pack(config):  # ToDo: test!
     venv_dir = tmpdir / "venv"
     pip = get_pip()
     cmd = [pip, "install", "appdirs", f"--target={venv_dir}"]
-    subprocess.run(cmd, check=True)  # ToDo: absorb outputs
+    logged_exec(cmd)
 
     # store the needed metadata
     print("DEBUG packer: saving metadata")
@@ -86,6 +118,7 @@ def pack(config):  # ToDo: test!
     # create the zipfile
     packed_filepath = f"{config.project_name}.pyz"
     zipapp.create_archive(tmpdir, packed_filepath)
+    # ToDo: check if we can put a shebang here inside somehow
 
     # clean the temporary directory
     shutil.rmtree(tmpdir)

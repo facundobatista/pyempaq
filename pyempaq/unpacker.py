@@ -13,6 +13,10 @@ import time
 import venv
 import zipfile
 
+# this is the directory for the NEW virtualenv created for the project (not the packed
+# one to run unpacker itself)
+PROJECT_VENV_DIR = "project_venv"
+
 
 def find_venv_bin(basedir, exec_base):  # ToDo: move this to a common place
     """Heuristics to find the pip executable in different platforms."""
@@ -33,6 +37,8 @@ def log(template, *args):
     """Print debug lines if proper envvar is present."""
     # ToDo: only log if STOWER_DEBUG=1
     print("::pyempaq::", template.format(*args))
+    # ToDo: the unpacker should show this info to stderr only if a terminal is there; also, if
+    # a window system is available and not a terminal, show process with Tkinter? (if available!)
 
 
 def get_python_exec(project_dir):
@@ -41,7 +47,7 @@ def get_python_exec(project_dir):
     If a venv is present (just created or from a previous unpack) use it, else just use
     the one used to run this script.
     """
-    venv_dir = project_dir / "venv"
+    venv_dir = project_dir / PROJECT_VENV_DIR
     if venv_dir.exists():
         executable = find_venv_bin(venv_dir, "python")
     else:
@@ -81,10 +87,10 @@ else:
     venv_requirements = metadata["requirement_files"]
     if venv_requirements:
         log("Creating payload virtualenv")
-        venv_dir = project_dir / "venv"
+        venv_dir = project_dir / PROJECT_VENV_DIR
         venv.create(venv_dir, with_pip=True)
-        pip_exec = find_venv_bin(venv_dir, "pip")
-        cmd = [pip_exec, "install"]
+        pip_exec = find_venv_bin(venv_dir, "pip3")
+        cmd = [str(pip_exec), "install"]
         for req_file in venv_requirements:
             cmd += ["-r", str(original_project_dir / req_file)]
         log("Installing dependencies: {}", cmd)
@@ -98,6 +104,6 @@ python_exec = get_python_exec(project_dir)
 log("Running payload using {!r}", python_exec)
 os.chdir(original_project_dir)
 # ToDo: pass the rest of the sysargs to the payload project here
-cmd = [python_exec, metadata["entrypoint"]]
+cmd = [str(python_exec), metadata["entrypoint"]]
 subprocess.run(cmd)
 log("Pyempaq done")
