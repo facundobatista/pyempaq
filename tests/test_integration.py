@@ -72,8 +72,7 @@ def test_basic_cycle_full(tmp_path):
     cmd = [sys.executable, "projectname.pyz"]
     proc = subprocess.run(
         cmd, check=True,
-        # stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-        universal_newlines=True)
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     output_lines = proc.stdout.split("\n")
 
     # verify output
