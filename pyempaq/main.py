@@ -65,25 +65,20 @@ def logged_exec(cmd):  # ToDo: test!
 
 def get_pip():
     """Ensure an usable version of `pip`."""
-    useful_pip = pathlib.Path("pip")
+    useful_pip = pathlib.Path("pip3")
     # try to see if it's already installed
     try:
-        output = logged_exec([useful_pip, "--version"])
+        logged_exec([useful_pip, "--version"])
     except ExecutionError:
         # failed to find a runnable pip, we need to install one
         pass
     else:
-        version = output[0]
-        if "python3" in version:
-            # modern pip, we're fine!
-            return useful_pip
+        return useful_pip
 
     # no useful pip found, let's create a virtualenv and use the one inside
     tmpdir = pathlib.Path(tempfile.mkdtemp())
-    print("======== tmpdir", repr(tmpdir))
-    print("======== ok?", tmpdir.exists())
     venv.create(tmpdir, with_pip=True)
-    useful_pip = find_venv_bin(tmpdir, "pip")
+    useful_pip = find_venv_bin(tmpdir, "pip3")
     return useful_pip
 
 

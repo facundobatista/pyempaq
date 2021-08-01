@@ -85,7 +85,7 @@ else:
         log("Creating payload virtualenv")
         venv_dir = project_dir / "venv"
         venv.create(venv_dir, with_pip=True)
-        pip_exec = find_venv_bin(venv_dir, "pip")
+        pip_exec = find_venv_bin(venv_dir, "pip3")
         cmd = [str(pip_exec), "install"]
         for req_file in venv_requirements:
             cmd += ["-r", str(original_project_dir / req_file)]
