@@ -81,6 +81,7 @@ else:
     zf.extractall(path=project_dir)
 
     venv_requirements = metadata["requirement_files"]
+    print("============ bases unpk?", (sys.prefix == sys.base_prefix, sys.prefix, sys.base_prefix))
     if venv_requirements:
         log("Creating payload virtualenv")
         venv_dir = project_dir / "venv"
