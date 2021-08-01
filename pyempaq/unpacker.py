@@ -13,6 +13,10 @@ import time
 import venv
 import zipfile
 
+# this is the directory for the NEW virtualenv created for the project (not the packed
+# one to run unpacker itself)
+PROJECT_VENV_DIR = "project_venv"
+
 
 def find_venv_bin(basedir, exec_base):  # ToDo: move this to a common place
     """Heuristics to find the pip executable in different platforms."""
@@ -43,7 +47,7 @@ def get_python_exec(project_dir):
     If a venv is present (just created or from a previous unpack) use it, else just use
     the one used to run this script.
     """
-    venv_dir = project_dir / "venv"
+    venv_dir = project_dir / PROJECT_VENV_DIR
     if venv_dir.exists():
         executable = find_venv_bin(venv_dir, "python")
     else:
@@ -83,7 +87,7 @@ else:
     venv_requirements = metadata["requirement_files"]
     if venv_requirements:
         log("Creating payload virtualenv")
-        venv_dir = project_dir / "venv"
+        venv_dir = project_dir / PROJECT_VENV_DIR
         venv.create(venv_dir, with_pip=True)
         pip_exec = find_venv_bin(venv_dir, "pip3")
         cmd = [str(pip_exec), "install"]

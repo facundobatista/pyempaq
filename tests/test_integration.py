@@ -85,9 +85,3 @@ def test_basic_cycle_full(tmp_path):
     # XXX Facundo 2021-08-01: this check is disabled until we discover why venv.create
     # not working in GA
     # assert "virtualenv module ok" in output_lines
-
-
-def test_create_venv(tmp_path):
-    """Fake test to show that venv.create doesn't work in Github Actions."""
-    import venv
-    venv.create(str(tmp_path), with_pip=True)
