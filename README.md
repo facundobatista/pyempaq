@@ -15,6 +15,8 @@ Create three examples here:
 - a game with arcade
 - Encuentro with Qt
 
+.. image:: resources/logo-256.png
+
 
 ### How does this work?
 
