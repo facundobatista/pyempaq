@@ -15,7 +15,7 @@ Create three examples here:
 - a game with arcade
 - Encuentro with Qt
 
-.. image:: resources/logo-256.png
+![logo](resources/logo-256.png?raw=True)
 
 
 ### How does this work?
