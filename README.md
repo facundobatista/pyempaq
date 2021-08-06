@@ -4,18 +4,15 @@ A simple but powerful Python packer to run any project with any virtualenv depen
 
 With PyEmpaq you can convert any Python project (see limitations below) in a single `.pyz` file with everything packed inside. 
 
-That single file is everything that needs to be distributed. When the final user executes it, the original project will be expanded, its dependencies installed in a virtualenv, and then it will be executed.
+That single file is everything that needs to be distributed. When the final user executes it, the original project will be expanded, its dependencies installed in a virtualenv, and then it will be executed. Note that no special permissions or privileges are required, as everything happens in the user environment.
 
 Both the packaging and the execution are fully multiplatorm. This means that you can pack a project in Linux, Windows, Mac or whatever, and it will run ok in Linux, Windows, Mac or whatever.
 
-# FIXME
+You can try yourself some packed with PyEmpaq examples, very easy, just download any of these files and run it with Python:
 
-Create three examples here:
-- something pure terminal, very small, like a fortune cookie teller
-- a game with arcade
-- Encuentro with Qt
-
-![logo](resources/logo-256.png?raw=True)
+- [in a terminal](examples/simple-command-line.pyz): a very small pure terminal example (this, of course, needs to be run in a terminal)
+- [a game](examples/arcade-game.pyz): a simple game using the [Python Arcade](https://api.arcade.academy/en/latest/) library (actually, it's the [example #6 from their tutorial](https://api.arcade.academy/en/latest/examples/platform_tutorial/step_06.html))
+- [desktop app](examples/desktop-qt-app.pyz): a full-fledged desktop application using PyQt5 (this [Encuentro app](https://encuentro.taniquetil.com.ar/))
 
 
 ### How does this work?
@@ -80,9 +77,9 @@ There are some limitations, though:
 If you have any ideas on how to overcome any of these limitations, let's talk!
 
 
-## A simple try for the example
+## A simple try for the example source project
 
-The project comes with a small example project. Just a couple of dir/files under `example`:
+The project comes with a small example project. Just a couple of dir/files under `examples/srcproject`:
 
 - a `src` and `media`, with stuff to be imported and accessed
 
@@ -92,9 +89,9 @@ The project comes with a small example project. Just a couple of dir/files under
 
 This explores most of the needs of any project. You can try this example, and will be ready to actually try any other project you want.
 
-So, let's pack the example:
+So, let's pack the example source project:
 
-    python3 -m pyempaq example/ example/ep.py --requirement=example/requirements.txt
+    python3 -m pyempaq examples/srcproject/ examples/srcproject/ep.py --requirement=examples/srcproject/requirements.txt
 
 That command executed the PyEmpaq project specifying:
 

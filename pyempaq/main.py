@@ -116,6 +116,7 @@ def pack(config):  # ToDo: test!
         json.dump(metadata, fh)
 
     # create the zipfile
+    # ToDo: could we have some hashing to verify that the PYZ is "solid"?
     packed_filepath = f"{config.project_name}.pyz"
     zipapp.create_archive(tmpdir, packed_filepath)
     # ToDo: check if we can put a shebang here inside somehow
