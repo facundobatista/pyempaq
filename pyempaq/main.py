@@ -139,6 +139,14 @@ def process_args(args):
     # validate input and calculate the relative paths
     if not args.basedir.exists():
         raise ArgumentsError(f"Cannot find the base directory: {str(args.basedir)!r}.")
+    # ToDo: for entry point we need to support a generic "exec" key with different subkeys,
+    # according to how the script is executed:
+    # - script: directly which python script to run; we'll do `python3 SCRIPT`
+    # - module: the module to invoke; we'll do `python3 -m MODULE`
+    # - entrypoint: freeform, as a list of strings, we'll only insert `python3` at the beginning
+    # for any of those, also can be a `default-args` option; these will be the arguments passed
+    # to any of the previous combinations (*unless* the pyz execution receives arguments, which
+    # will override this)
     if not args.entrypoint.exists():
         raise ArgumentsError(f"Cannot find the entrypoint: {str(args.entrypoint)!r}.")
     try:
