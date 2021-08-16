@@ -18,7 +18,7 @@ import zipfile
 PROJECT_VENV_DIR = "project_venv"
 
 
-def find_venv_bin(basedir, exec_base):  # ToDo: move this to a common place
+def find_venv_bin(basedir, exec_base):
     """Heuristics to find the pip executable in different platforms."""
     bin_dir = basedir / "bin"
     if bin_dir.exists():
@@ -35,10 +35,7 @@ def find_venv_bin(basedir, exec_base):  # ToDo: move this to a common place
 
 def log(template, *args):
     """Print debug lines if proper envvar is present."""
-    # ToDo: only log if STOWER_DEBUG=1
     print("::pyempaq::", template.format(*args))
-    # ToDo: the unpacker should show this info to stderr only if a terminal is there; also, if
-    # a window system is available and not a terminal, show process with Tkinter? (if available!)
 
 
 def get_python_exec(project_dir):
@@ -94,7 +91,7 @@ else:
         for req_file in venv_requirements:
             cmd += ["-r", str(original_project_dir / req_file)]
         log("Installing dependencies: {}", cmd)
-        subprocess.run(cmd, check=True)  # ToDo absorb outputs here
+        subprocess.run(cmd, check=True)
         log("Virtualenv setup finished")
 
     else:
@@ -103,8 +100,6 @@ else:
 python_exec = get_python_exec(project_dir)
 log("Running payload using {!r}", python_exec)
 os.chdir(original_project_dir)
-# ToDo: pass the rest of the sysargs to the payload project here
-# ToDo: support more flexibility here, coming from the metadata
 cmd = [str(python_exec), metadata["entrypoint"]]
 subprocess.run(cmd)
 log("Pyempaq done")
