@@ -10,7 +10,6 @@ Both the packaging and the execution are fully multiplatorm. This means that you
 
 You can try yourself some packed with PyEmpaq examples, very easy, just download any of these files and run it with Python:
 
-https://github.com/facundobatista/pyempaq/blob/main/examples/simple-command-line.pyz?raw=True
 - [in a terminal](https://github.com/facundobatista/pyempaq/blob/main/examples/simple-command-line.pyz?raw=True): a very small pure terminal example (this, of course, needs to be run in a terminal)
 - [a game](https://github.com/facundobatista/pyempaq/blob/main/examples/arcade-game.pyz?raw=True): a simple game using the [Python Arcade](https://api.arcade.academy/en/latest/) library (actually, it's the [example #6 from their tutorial](https://api.arcade.academy/en/latest/examples/platform_tutorial/step_06.html))
 - [desktop app](https://github.com/facundobatista/pyempaq/blob/main/examples/desktop-qt-app.pyz?raw=True): a full-fledged desktop application using PyQt5 (this [Encuentro app](https://encuentro.taniquetil.com.ar/))

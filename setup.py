@@ -10,7 +10,7 @@ from setuptools import setup
 
 setup(
     name="pyempaq",
-    version="0.1",
+    version="0.1.1",
     author="Facundo Batista",
     author_email="facundo@taniquetil.com.ar",
     description="A Python packer to run anywhwere any project with any virtualenv dependencies.",
