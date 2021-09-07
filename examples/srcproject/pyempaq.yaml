@@ -1,0 +1,5 @@
+name: pyempaq-example
+exec:
+  script: ep.py
+dependencies:
+  - requests

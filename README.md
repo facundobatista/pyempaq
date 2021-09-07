@@ -50,23 +50,40 @@ The verification that the unpacker does to see if has a reusable setup from the 
 
 ### Command line options
 
-**Note**: in the future we will migrate to a more expresive `pyempaq.yaml` config for the project, which will declare this variables and others, and will not use command line arguments to specify them.
+**Note**: [in the future](https://github.com/facundobatista/pyempaq/issues/8) we will be able to control verbosity, we're not there yet.
 
-These are the current options:
+There is one mandatory parameter:
 
-- `basedir`: the root of the project's directory tree
-- `entrypoint`: what to execute to start the project
-- `--requirement`: (optional, can be specified multiple times) the requirements file with the project's dependencies
+- `source`: it needs to point the configuration file or to the directory where it will be located (will be searched by its default name `pyempaq.yaml`).
 
 
 ### The configuration file
 
-*(We don't have one YET, currently all options are indicated through command line, but will migrate to having a config file soon.)*
+This is the structure of the `pyempaq.yaml` configuration file:
+
+- `name` [mandatory]: the name of the project.
+- `basedir` [optional, defaults to `.`]: the project's base directory.
+- `exec` [mandatory]: the section where is defined the information to execute the project once unpacked; it holds different subkeys:
+    - `script` [†]: the filepath of the python script to run; when unpacking PyEmpaq will do `python3 SCRIPT`.
+    - `module` [†]: the name of the module to invoke; when unpacking PyEmpaq will do `python3 -m MODULE`.
+    - `entrypoint` [†]: freeform, as a list of strings; when unpacking PyEmpaq will only insert the proper python3 at the beginning: `python3 STR1 STR2 ...`.
+    - `default-args` [optional]: the default arguments to be passed to the script/module/entrypoint (if not overriden when the distributed `.pyz` is executed); **note**t that this option is [not available yet](https://github.com/facundobatista/pyempaq/issues/14).
+  Note the subkeys marked with †: ONE of those keys must be present, but only ONE.
+- `requirements`: a list of filepaths pointing to the requirement files with pip-installable dependencies.
+- `dependencies`: a list of strings to directly specify packages to be installed by `pip` without needing to have a requirement file.
+
+All specified filepaths must exist, and may be relative (to the project's base directory), with the exception of `basedir` itself which can be absolute or relative (to the configuration file location).
+
+The following are examples of different configuration files (which were the ones used to build the packed examples mentioned before):
+
+- [the terminal script](https://github.com/facundobatista/pyempaq/blob/main/examples/pyempaq-script.yaml?raw=True)
+- [the simple game](https://github.com/facundobatista/pyempaq/blob/main/examples/pyempaq-game.yaml?raw=True)
+- [the full desktop app](https://github.com/facundobatista/pyempaq/blob/main/examples/pyempaq-desktop-app.yaml?raw=True)
 
 
 ### Limitations:
 
-There are some limitations, though:
+There are some limitations:
 
 - Only Python >= 3.6 is supported
 
@@ -83,35 +100,32 @@ If you have any ideas on how to overcome any of these limitations, let's talk!
 
 The project comes with a small example project. Just a couple of dir/files under `examples/srcproject`:
 
-- a `src` and `media`, with stuff to be imported and accessed
+- a `src` and `media`, with stuff to be imported and accessed.
 
-- a `requirements.txt` which declares a simple dependency
+- a `pyempaq.yaml` with the configuration for PyEmpaq.
 
 - a `ep.py` file which is the project's entrypoint; all it does is to inform i started, import the internal module, access the media files, and use the declared dependency, reporting every step.
 
 This explores most of the needs of any project. You can try this example, and will be ready to actually try any other project you want.
 
-So, let's pack the example source project:
+So, let's pack the example source project. If you have `fades` installed is super easy:
 
-    python3 -m pyempaq examples/srcproject/ examples/srcproject/ep.py --requirement=examples/srcproject/requirements.txt
+    fades -r requirements.txt -m pyempaq examples/srcproject/
 
-That command executed the PyEmpaq project specifying:
+Otherwise, you would need to create and use a virtual environment:
 
-- the base directory of the project to pack (all its subtree will be packed)
+    python3 -m venv env
+    source env/bin/activate
+    pip install -r requirements
+    python3 -m pyempaq examples/srcproject/
 
-- the entry point to execute the project
+After running that command, you will see a `pyempaq-example.pyz` file. That is the **whole project encoded in a single file**.
 
-- one or more requirement files specifying the project's dependencies
-
-**Note**: in the future we will migrate to a more expresive `pyempaq.yaml` config for the project, which will declare this variables and others, and will not use command line arguments to specify them.
-
-After running that command, you will see a `projectname.pyz` file (**note**: the project's name is hardcoded so far, this will change in the future). That is the **whole project encoded in a single file**.
-
-At this point you may move that `projectname.pyz` to another directory, or to another machine, even that other machine having another operating system.
+At this point you may move that `pyempaq-example.pyz` to another directory, or to another machine, even that other machine having another operating system.
 
 Then, try it:
 
-    python3 projectname.pyz
+    python3 pyempaq-example.pyz
 
 You should see the project's reportings that we mentioned above (**note**: these lines will be surrounded by debug ones that will be hidden by default in the future):
 
