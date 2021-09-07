@@ -18,14 +18,14 @@ def test_missing_source_file(tmp_path):
     config_file = tmp_path / "config.yaml"
     with pytest.raises(ConfigError) as cm:
         load_config(config_file)
-    assert str(cm.value) == f"Configuration file not found: '{config_file}'"
+    assert str(cm.value) == f"Configuration file not found: {str(config_file)!r}"
 
 
 def test_missing_source_in_dir(tmp_path):
     """The indicate directory does not have an useful file."""
     with pytest.raises(ConfigError) as cm:
         load_config(tmp_path)
-    assert str(cm.value) == f"Configuration file not found: '{tmp_path / 'pyempaq.yaml'}'"
+    assert str(cm.value) == f"Configuration file not found: {str(tmp_path / 'pyempaq.yaml')!r}"
 
 
 def test_bad_source(tmp_path):
@@ -34,7 +34,7 @@ def test_bad_source(tmp_path):
     config_file.write_text("x: [a, ")
     with pytest.raises(ConfigError) as cm:
         load_config(tmp_path)
-    assert str(cm.value) == f"Cannot open and parse YAML configuration file '{config_file}'"
+    assert str(cm.value) == f"Cannot open and parse YAML configuration file {str(config_file)!r}"
 
 
 # -- general sanity case
@@ -132,8 +132,8 @@ def test_basedir_not_a_directory(tmp_path):
     with pytest.raises(ConfigError) as cm:
         load_config(config_file)
     assert cm.value.errors == [
-        f"- 'basedir': path '{tmp_path / 'config.yaml'}' must be a directory",
-        f"- 'exec.script': path '{tmp_path / 'config.yaml/script.py'}' not found",
+        f"- 'basedir': path {str(tmp_path / 'config.yaml')!r} must be a directory",
+        f"- 'exec.script': path {str(tmp_path / 'config.yaml/script.py')!r} not found",
     ]
 
 
@@ -150,8 +150,8 @@ def test_basedir_missing(tmp_path):
     with pytest.raises(ConfigError) as cm:
         load_config(config_file)
     assert cm.value.errors == [
-        f"- 'basedir': path '{tmp_path / 'whatever'}' not found",
-        f"- 'exec.script': path '{tmp_path / 'whatever/script.py'}' not found",
+        f"- 'basedir': path {str(tmp_path / 'whatever')!r} not found",
+        f"- 'exec.script': path {str(tmp_path / 'whatever/script.py')!r} not found",
     ]
 
 
@@ -186,7 +186,7 @@ def test_exec_script_missing(tmp_path):
     with pytest.raises(ConfigError) as cm:
         load_config(config_file)
     assert cm.value.errors == [
-        f"- 'exec.script': path '{tmp_path / 'script.py'}' not found",
+        f"- 'exec.script': path {str(tmp_path / 'script.py')!r} not found",
     ]
 
 
@@ -239,7 +239,7 @@ def test_exec_script_not_a_file(tmp_path):
     with pytest.raises(ConfigError) as cm:
         load_config(config_file)
     assert cm.value.errors == [
-        f"- 'exec.script': path '{tmp_path / 'script.py'}' must be a file",
+        f"- 'exec.script': path {str(tmp_path / 'script.py')!r} must be a file",
     ]
 
 
@@ -272,7 +272,7 @@ def test_exec_module_missing(tmp_path):
     with pytest.raises(ConfigError) as cm:
         load_config(config_file)
     assert cm.value.errors == [
-        f"- 'exec.module': path '{tmp_path / 'foobar'}' not found",
+        f"- 'exec.module': path {str(tmp_path / 'foobar')!r} not found",
     ]
 
 
@@ -492,7 +492,7 @@ def test_reqdeps_requirements_missing(tmp_path):
     with pytest.raises(ConfigError) as cm:
         load_config(config_file)
     assert cm.value.errors == [
-        f"- 'requirements[0]': path '{tmp_path / 'reqs1.txt'}' not found",
+        f"- 'requirements[0]': path {str(tmp_path / 'reqs1.txt')!r} not found",
     ]
 
 
