@@ -17,6 +17,10 @@ You can try yourself some packed with PyEmpaq examples, very easy, just download
 ![logo](https://github.com/facundobatista/pyempaq/blob/main/resources/logo-256.png?raw=True)
 
 
+You can install `pyempaq` directly from PyPI; see [instructions below](https://github.com/facundobatista/pyempaq#how-to-install).
+
+
+
 ### How does this work?
 
 There are two phases: packing and execution. 
@@ -94,6 +98,15 @@ There are some limitations:
 - Only dependencies that are pure Python or provide wheels are supported.
 
 If you have any ideas on how to overcome any of these limitations, let's talk!
+
+
+## How to install
+
+Directly from PyPI:
+
+    pip install --user --upgrade --ignore-installed pyempaq
+
+In the future there will be more ways to install it. Please open an issue if you want to provide another method, thanks!
 
 
 ## A simple try for the example source project
