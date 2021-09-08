@@ -5,10 +5,17 @@
 """Tests for the argument processing."""
 
 import pathlib
+import sys
 
 import pytest
 
 from pyempaq.config_manager import load_config, ConfigError, _format_pydantic_errors
+
+
+@pytest.fixture
+def drive_letter():
+    """Provide a drive letter under windows, so paths can be made absolute."""
+    return 'c:' if sys.platform == 'win32' else ''
 
 
 # -- basic problems
@@ -209,13 +216,13 @@ def test_exec_script_outside_project(tmp_path):
     ]
 
 
-def test_exec_script_absolute(tmp_path):
+def test_exec_script_absolute(tmp_path, drive_letter):
     """Check script subkey using an absolute path."""
     config_file = tmp_path / "config.yaml"
-    config_file.write_text("""
+    config_file.write_text(f"""
         name: testproject
         exec:
-            script: /media/foobar/script.py
+            script: {drive_letter}/media/foobar/script.py
     """)
 
     with pytest.raises(ConfigError) as cm:
@@ -295,13 +302,13 @@ def test_exec_module_outside_project(tmp_path):
     ]
 
 
-def test_exec_module_absolute(tmp_path):
+def test_exec_module_absolute(tmp_path, drive_letter):
     """Check module subkey using absoule path."""
     config_file = tmp_path / "config.yaml"
-    config_file.write_text("""
+    config_file.write_text(f"""
         name: testproject
         exec:
-            module: /tmp/foobar
+            module: {drive_letter}/tmp/foobar
     """)
 
     with pytest.raises(ConfigError) as cm:
@@ -460,15 +467,15 @@ def test_reqdeps_requirements_ok(tmp_path):
     assert config.requirements == [pathlib.Path("reqs1.txt")]
 
 
-def test_reqdeps_requirements_absolute(tmp_path):
+def test_reqdeps_requirements_absolute(tmp_path, drive_letter):
     """Requirements file is absolute."""
     config_file = tmp_path / "config.yaml"
-    config_file.write_text("""
+    config_file.write_text(f"""
         name: testproject
         exec:
             entrypoint: ["foo", "bar"]
         requirements:
-            - /tmp/reqs1.txt
+            - {drive_letter}/tmp/reqs1.txt
     """)
     reqs_file = tmp_path / "reqs1.txt"
     reqs_file.touch()
