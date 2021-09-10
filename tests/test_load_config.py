@@ -120,7 +120,8 @@ def test_paths_relative_to_basedir_userhome(tmp_path, monkeypatch):
     script = projectdir / "script.py"
     script.write_text("test script content")
 
-    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("HOME", str(tmp_path))  # posix
+    monkeypatch.setenv("USERPROFILE", str(tmp_path))  # windows
     config = load_config(config_file)
     assert config.basedir == projectdir
     assert (config.basedir / config.exec.script).read_text() == "test script content"
