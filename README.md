@@ -41,7 +41,7 @@ All this means that the most majority of the projects could be packed and run by
 
 There are two phases: packing and execution. 
 
-The **packing** is run by the project developer, only once, before distribution. It's a simple step where the developer runs PyEmpaq indicating all needed info, and PyEmpaq will produce a single `<projectname>.pyz` file. That's all, and that only file is what is needed for distribution.
+The **packing phase** is executed by the project developer, only once, before distribution. It's a simple step where the developer runs PyEmpaq indicating all needed info, and PyEmpaq will produce a single `<projectname>.pyz` file. That's all, and that only file is what is needed for distribution.
 
 In this packing phase, PyEmpaq builds the indicated packed file, putting inside:
 
@@ -53,7 +53,7 @@ In this packing phase, PyEmpaq builds the indicated packed file, putting inside:
 
 After packing, the developer will distribute the packed file, final users will download/receive/get it, and execute it.
 
-To execute it, all that needs to be done is to run it using Python, which can be done from the command line (e.g. `python3 supergame.pyz`) or by doing double click from the file explorer in those systems that relate the `.pyz` extension to Python (e.g. Windows).
+In the **execution phase** all that needs to be done by the final user is to run it using Python, which can be done from the command line (e.g. `python3 supergame.pyz`) or by doing double click from the file explorer in those systems that relate the `.pyz` extension to Python (e.g. Windows).
 
 In this execution phase, the *unpacker* script put by PyEmpaq inside the packed file will be run, running the following steps:
 
