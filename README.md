@@ -49,7 +49,7 @@ In this packing phase, PyEmpaq builds the indicated packed file, putting inside:
 
 - an *unpacker* script from PyEmpaq, which will be run during the execution phase
 
-- few more stuff, some needed infrastructure details for the `.pyz` to run correctly
+- few more stuff: some needed infrastructure details for the `.pyz` to run correctly
 
 After packing, the developer will distribute the packed file, final users will download/receive/get it, and execute it.
 
@@ -70,8 +70,6 @@ The verification that the unpacker does to see if has a reusable setup from the 
 
 ## Command line options
 
-**Note**: [in the future](https://github.com/facundobatista/pyempaq/issues/8) we will be able to control verbosity, we're not there yet.
-
 There is one mandatory parameter:
 
 - `source`: it needs to point the configuration file or to the directory where the configuration will be located (it will be searched by its default name `pyempaq.yaml`).
@@ -83,6 +81,8 @@ Examples:
 - `pyempaq /data/project/`
 
 - `pyempaq ~/repo/proj/config.yaml`
+
+**Note**: [in the future](https://github.com/facundobatista/pyempaq/issues/8) we will be able to control verbosity, we're not there yet.
 
 
 ## The configuration file
