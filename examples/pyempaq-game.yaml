@@ -1,0 +1,6 @@
+name: arcade-game
+exec:
+  script: game.py
+dependencies:
+  - arcade
+

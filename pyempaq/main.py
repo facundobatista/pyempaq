@@ -11,16 +11,15 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import uuid
 import venv
 import zipapp
 from collections import namedtuple
 
+from pyempaq.config_manager import load_config, ConfigError
+
 # collected arguments
 Args = namedtuple("Args", "project_name basedir entrypoint requirement_files")
-
-
-class ArgumentsError(Exception):
-    """Flag an error with the given arguments."""
 
 
 class ExecutionError(Exception):
@@ -103,77 +102,58 @@ def pack(config):
     logged_exec(cmd)
 
     # store the needed metadata
-    print("DEBUG packer: saving metadata")
+    print("DEBUG packer: saving metadata from config", config)
     metadata = {
-        "entrypoint": str(config.entrypoint),
-        "requirement_files": [str(path) for path in config.requirement_files],
-        "project_name": config.project_name,
+        "requirement_files": [str(path) for path in config.requirements],
+        "project_name": config.name,
+        "exec_default_args": config.exec.default_args,
     }
+    if config.exec.script is not None:
+        metadata["exec_style"] = "script"
+        metadata["exec_value"] = str(config.exec.script)
+    elif config.exec.module is not None:
+        metadata["exec_style"] = "module"
+        metadata["exec_value"] = str(config.exec.module)
+    elif config.exec.entrypoint is not None:
+        metadata["exec_style"] = "entrypoint"
+        metadata["exec_value"] = str(config.exec.entrypoint)
+
+    # if dependencies, store them just as another requirement file (save it inside the project,
+    # but using an unique name to not overwrite anything)
+    if config.dependencies:
+        unique_name = f"pyempaq-autoreq-{uuid.uuid4()}.txt"
+        extra_deps = origdir / unique_name
+        extra_deps.write_text("\n".join(config.dependencies))
+        metadata["requirement_files"].append(unique_name)
+
     metadata_file = tmpdir / "metadata.json"
     with metadata_file.open("wt", encoding="utf8") as fh:
         json.dump(metadata, fh)
 
     # create the zipfile
-    packed_filepath = f"{config.project_name}.pyz"
+    packed_filepath = f"{config.name}.pyz"
     zipapp.create_archive(tmpdir, packed_filepath)
 
     # clean the temporary directory
     shutil.rmtree(tmpdir)
 
-    print("Done, project packed in packed_filepath")
-
-
-def process_args(args):
-    """Process and validate the received arguments."""
-    project_name = "projectname"
-
-    print("DEBUG packer: validating args")
-    # validate input and calculate the relative paths
-    if not args.basedir.exists():
-        raise ArgumentsError(f"Cannot find the base directory: {str(args.basedir)!r}.")
-    if not args.entrypoint.exists():
-        raise ArgumentsError(f"Cannot find the entrypoint: {str(args.entrypoint)!r}.")
-    try:
-        relative_entrypoint = args.entrypoint.relative_to(args.basedir)
-    except ValueError:
-        raise ArgumentsError(
-            f"The entrypoint {str(args.entrypoint)!r} must be inside "
-            f"the project {str(args.basedir)!r}.")
-
-    relative_requirements = []
-    for req in (args.requirement or []):
-        if not req.exists():
-            raise ArgumentsError(f"Cannot find the requirement file: {str(req)!r}.")
-        try:
-            relative_req = req.relative_to(args.basedir)
-        except ValueError:
-            raise ArgumentsError(
-                f"The requirement file {str(req)!r} must be "
-                f"inside the project {str(args.basedir)!r}.")
-        relative_requirements.append(relative_req)
-
-    return Args(
-        entrypoint=relative_entrypoint, basedir=args.basedir,
-        requirement_files=relative_requirements, project_name=project_name)
+    print("Done, project packed in", packed_filepath)
 
 
 def main():
     """Manage CLI interaction and call pack."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "basedir", type=pathlib.Path,
-        help="Base directory, all its subtree will be packed.")
-    parser.add_argument(
-        "entrypoint", type=pathlib.Path,
-        help="The file that should be executed to run the project.")
-    parser.add_argument(
-        "--requirement", type=pathlib.Path, action="append",
-        help="Requirement file (this option can be used multiple times).")
+        "source", type=pathlib.Path,
+        help="The source file (pyempaq.yaml) or the directory where to find it.")
     args = parser.parse_args()
     try:
-        processed_args = process_args(args)
-    except ArgumentsError as err:
-        print("ERROR:", str(err), file=sys.stderr)
+        print(f"Parsing configuration in {str(args.source)!r}")
+        config = load_config(args.source)
+    except ConfigError as err:
+        print(err, file=sys.stderr)
+        for err in err.errors:
+            print(err, file=sys.stderr)
         exit(1)
 
-    pack(processed_args)
+    pack(config)

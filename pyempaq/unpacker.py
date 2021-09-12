@@ -97,9 +97,17 @@ else:
     else:
         log("Skipping virtualenv (no requirements)")
 
-python_exec = get_python_exec(project_dir)
-log("Running payload using {!r}", python_exec)
+python_exec = str(get_python_exec(project_dir))
 os.chdir(original_project_dir)
-cmd = [str(python_exec), metadata["entrypoint"]]
+
+if metadata["exec_style"] == "script":
+    cmd = [python_exec, metadata["exec_value"]]
+elif metadata["exec_style"] == "module":
+    cmd = [python_exec, "-m", metadata["exec_value"]]
+elif metadata["exec_style"] == "entrypoint":
+    cmd = [python_exec] + metadata["exec_value"]
+cmd.extend(metadata["exec_default_args"])
+
+log("Running payload: {}", cmd)
 subprocess.run(cmd)
 log("Pyempaq done")
