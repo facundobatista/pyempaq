@@ -1,0 +1,6 @@
+name: desktop-qt-app
+exec:
+  module: encuentro
+requirements:
+  - requirements.txt
+

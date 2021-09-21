@@ -1,4 +1,5 @@
-distutils
+-r requirements.txt
+
 flake8
 pydocstyle
 pytest

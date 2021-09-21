@@ -1,0 +1,6 @@
+name: simple-command-line
+exec:
+  script: script.py
+dependencies:
+  - cowpy
+

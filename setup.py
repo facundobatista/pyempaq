@@ -8,9 +8,12 @@
 
 from setuptools import setup
 
+with open("requirements.txt", "rt") as fh:
+    install_requires = [x.strip() for x in fh]
+
 setup(
     name="pyempaq",
-    version="0.1",
+    version="0.1.1",
     author="Facundo Batista",
     author_email="facundo@taniquetil.com.ar",
     description="A Python packer to run anywhwere any project with any virtualenv dependencies.",
@@ -30,5 +33,6 @@ setup(
     entry_points={
         "console_scripts": ["pyempaq = pyempaq.main:main"],
     },
+    install_requires=install_requires,
     python_requires=">=3.5",
 )

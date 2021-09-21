@@ -50,26 +50,30 @@ def test_basic_cycle_full(tmp_path):
     reqspath = projectpath / "requirements.txt"
     reqspath.write_text("requests")
 
+    # write the proper config
+    config = tmp_path / "pyempaq.yaml"
+    config.write_text(textwrap.dedent(f"""
+        name: testproject
+        basedir: {projectpath}
+        exec:
+          script: ep.py
+    """))
+
     # pack it calling current pyempaq externally
     env = dict(os.environ)  # need to replicate original env because of Windows
     env["PYTHONPATH"] = os.getcwd()
-    cmd = [
-        sys.executable, "-m", "pyempaq",
-        str(projectpath), str(entrypoint)]
-    # XXX Facundo 2021-08-01: not passing requirements until we discover why venv.create
-    # not working in GA
-    #    str(projectpath), str(entrypoint), "--requirement={}".format(reqspath)]
+    cmd = [sys.executable, "-m", "pyempaq", str(config)]
     os.chdir(projectpath)
     subprocess.run(cmd, check=True, env=env)
-    packed_filepath = projectpath / "projectname.pyz"
+    packed_filepath = projectpath / "testproject.pyz"
     assert packed_filepath.exists()
 
     # run the packed file in a clean directory
     cleandir = tmp_path / "cleandir"
     cleandir.mkdir()
-    packed_filepath.rename(cleandir / "projectname.pyz")
+    packed_filepath.rename(cleandir / "testproject.pyz")
     os.chdir(cleandir)
-    cmd = [sys.executable, "projectname.pyz"]
+    cmd = [sys.executable, "testproject.pyz"]
     proc = subprocess.run(
         cmd, check=True,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
