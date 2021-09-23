@@ -1,0 +1,19 @@
+# resize window
+
+# set up
+alias cat=pygmentize
+PS1="PyEmpaq Demo \$ "
+alias pyempaq="fades -d file:///home/facundo/devel/reps/pyempaq/ --check-updates -x pyempaq"
+
+# run 1
+clear
+ll
+cat pyempaq.yaml
+cat script.py
+pyempaq .
+ll
+
+# run 2
+clear
+wget wget -q https://github.com/facundobatista/pyempaq/raw/main/examples/simple-command-line.pyz
+python3 simple-command-line.pyz
