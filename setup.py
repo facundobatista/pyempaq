@@ -13,7 +13,7 @@ with open("requirements.txt", "rt") as fh:
 
 setup(
     name="pyempaq",
-    version="0.2",
+    version="0.2.1",
     author="Facundo Batista",
     author_email="facundo@taniquetil.com.ar",
     description="A Python packer to run anywhwere any project with any virtualenv dependencies.",

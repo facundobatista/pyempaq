@@ -1,0 +1,108 @@
+## for python-announces list
+
+PyEmpaq 0.2
+
+PyEmpaq is a simple but powerful Python packer to run any project with any virtualenv dependencies anywhere.
+
+With PyEmpaq you can convert any Python project into a single `.pyz` file with all the project's content packed inside.
+
+That single file is everything that needs to be distributed. When the final user executes it, the original project will be expanded, its dependencies installed in a virtualenv, and then executed. Note that no special permissions or privileges are required, as everything happens in the user environment.
+
+Both the packaging and the execution are fully multiplatorm. This means that you can pack a project in Linux, Windows, Mac or whatever, and it will run ok in Linux, Windows, Mac or whatever.  The only requirement is Python to be already installed.
+
+This version brings the following change:
+
+- Now all the information for packing comes from the config file.
+
+
+PyEmpaq can be installed directly from PyPI:
+
+    pip install --user --upgrade --ignore-installed pyempaq
+
+It's handy to install it using `pipx`, if you have it:
+
+    pipx install pyempaq
+
+If you have `fades` you don't even need to install pyempaq, just run it:
+
+    fades -d pyempaq -x pyempaq
+
+
+Check the project for all the information, including a couple of demo gifs showing PyEmpaq in action and examples for packed programs:
+
+    https://github.com/facundobatista/pyempaq/
+
+Regards,
+
+-----
+
+## for PyAr forum
+
+PyEmpaq 0.2
+
+[PyEmpaq](https://github.com/facundobatista/pyempaq/) es un simple pero poderoso empaquetador para programas en Python, para poder correr en cualquier lado todos los proyectos con dependencias que se instalen en un entorno virtual.
+
+Con PyEmpaq se puede convertir cualquier proyecto en Python en un único archivo `.pyz` con todo el contenido del proyecto adentro.
+
+Ese único archivo es todo lo que necesita ser distribuido. Cuando el usuario final lo ejecuta, el proyecto original será expandido, todas sus dependencias instaladas en un entorno virtual, y luego ejecutado. Cabe mencionar que no se necesitan permisos o privilegios especiales, ya que todo sucede en el entorno del usuario.
+
+Tanto el empaquetado como la ejecución son multiplataforma. Esto significa que se puede empaquetar un proyecto en Linux, Windows, Mac o lo que sea, y va a correr en Linux, Windows, Mac, o lo que sea. El único requerimiento es que Python ya esté instalado.
+
+
+Esta versión trae el siguiente cambio:
+
+- Ahora toda la info para empaquetar viene de un archivo de configuración
+
+
+PyEmpaq puede instalarse directamente de PyPI:
+
+```text
+pip install --user --upgrade --ignore-installed pyempaq
+```
+
+Es práctico instalarlo usando `pipx`, si lo tenés:
+
+```text
+pipx install pyempaq
+```
+
+Si tenés `fades` ni siquiera hace falta instalar pyempaq, sólo correrlo:
+
+```text
+fades -d pyempaq -x pyempaq
+```
+
+Revisá [el proyecto](https://github.com/facundobatista/pyempaq/) para obtener toda la información, incluyendo un par de gifs de demostración que muestran a PyEmpaq en acción y ejemplos de programas empaquetados.
+
+Saludetes,
+
+-----
+
+## for twitter
+
+PyEmpaq 0.2.1 released!
+
+PyEmpaq is a simple but powerful Python packer to run any project with any virtualenv deps anywhere.  New in this version:
+
+- Now all the information for packing comes from the config file.
+
+Check the project for all the info (including demo gifs and examples): https://github.com/facundobatista/pyempaq/
+
+
+
+-----
+
+## for PyAr telegram
+
+[ANN] PyEmpaq 0.2.1 liberado
+
+PyEmpaq es un simple pero poderoso empaquetador para programas en Python, para poder correr en cualquier lado todos los proyectos con dependencias que se instalen en un entorno virtual.
+
+Esta versión trae el siguiente cambio:
+
+- Ahora toda la info para empaquetar viene de un archivo de configuración
+
+Revisen el proyecto para toda la info (incluyendo demo gifs y ejemplos):
+
+(https://github.com/facundobatista/pyempaq/) 
+

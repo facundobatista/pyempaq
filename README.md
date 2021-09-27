@@ -2,13 +2,13 @@
 
 A simple but powerful Python packer to run any project with any virtualenv dependencies anywhwere.
 
-With PyEmpaq you can convert any Python project (see limitations below) into a single `.pyz` file with everything packed inside. 
+With PyEmpaq you can convert any Python project (see limitations below) into a single `.pyz` file with all the project's content packed inside. 
 
 Packing is super simple, see this demo:
 
 ![pack-demo](https://github.com/facundobatista/pyempaq/blob/main/resources/demo_pack.gif?raw=True)
 
-That single file is everything that needs to be distributed. When the final user executes it, the original project will be expanded, its dependencies installed in a virtualenv, and then executed. Note that no special permissions or privileges are required, as everything happens in the user environment.
+That single file is everything that needs to be distributed. When the final user executes it, the original project will be expanded, its dependencies installed in a virtualenv, and then executed. Note that no special permissions or privileges are required, as everything happens in the user environment. The only requirement is Python to be already installed.
 
 See that in action:
 
@@ -134,6 +134,10 @@ Directly from PyPI:
 
     pip install --user --upgrade --ignore-installed pyempaq
 
+It's handy to install it using `pipx`, if you have it:
+
+    pipx install pyempaq
+
 If you have `fades` you don't even need to install pyempaq, just run it:
 
     fades -d pyempaq -x pyempaq
@@ -141,9 +145,9 @@ If you have `fades` you don't even need to install pyempaq, just run it:
 In the future there will be more ways to install it. Please open an issue if you desire an installation method (extra points if you specify how), thanks!
 
 
-## Try the example source project
+## Try packing an example project
 
-The project comes with a small example project. Just a couple of dir/files under `examples/srcproject`:
+PyEmpaq sources come with a small example project if you want to play a little packing it. Just a couple of dir/files under `examples/srcproject`:
 
 - a `src` and `media`, with stuff to be imported and accessed.
 
