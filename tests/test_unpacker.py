@@ -7,7 +7,8 @@
 from pyempaq.unpacker import build_command
 
 
-def test_script_default_empty():
+def test_buildcommand_script_default_empty():
+    """Build a command in "script" mode."""
     metadata = {
         "exec_style": "script",
         "exec_value": "mystuff.py",
@@ -17,7 +18,8 @@ def test_script_default_empty():
     assert cmd == ["python.exe", "mystuff.py"]
 
 
-def test_module_default_empty():
+def test_buildcommand_module_default_empty():
+    """Build a command in "module" mode."""
     metadata = {
         "exec_style": "module",
         "exec_value": "mymodule",
@@ -27,7 +29,8 @@ def test_module_default_empty():
     assert cmd == ["python.exe", "-m", "mymodule"]
 
 
-def test_entrypoint_default_empty():
+def test_buildcommand_entrypoint_default_empty():
+    """Build a command in "entrypoint" mode."""
     metadata = {
         "exec_style": "entrypoint",
         "exec_value": ["whatever", "you", "want"],
@@ -37,7 +40,8 @@ def test_entrypoint_default_empty():
     assert cmd == ["python.exe", "whatever", "you", "want"]
 
 
-def test_script_default_nonempty():
+def test_buildcommand_script_default_nonempty():
+    """Build a command with default args."""
     metadata = {
         "exec_style": "script",
         "exec_value": "mystuff.py",
@@ -47,7 +51,8 @@ def test_script_default_nonempty():
     assert cmd == ["python.exe", "mystuff.py", "--foo", "3"]
 
 
-def test_script_sysargs():
+def test_buildcommand_script_sysargs():
+    """Build a command with user passed args."""
     metadata = {
         "exec_style": "script",
         "exec_value": "mystuff.py",

@@ -55,7 +55,7 @@ def get_python_exec(project_dir):
 
 
 def build_command(python_exec: str, metadata: Dict[str, str], sys_args: List[str]) -> List[str]:
-    """Builds the command to be executed."""
+    """Build the command to be executed."""
     if metadata["exec_style"] == "script":
         cmd = [python_exec, metadata["exec_value"]]
     elif metadata["exec_style"] == "module":
@@ -71,7 +71,7 @@ def build_command(python_exec: str, metadata: Dict[str, str], sys_args: List[str
 
 
 def run():
-    """Main entry point."""
+    """Run the unpacker."""
     log("Pyempaq start")
 
     # parse pyempaq metadata from the zip file
@@ -120,7 +120,7 @@ def run():
     python_exec = str(get_python_exec(project_dir))
     os.chdir(original_project_dir)
 
-    cmd = build_command(python_exec, metadata, sys.args[1:])
+    cmd = build_command(python_exec, metadata, sys.argv[1:])
     log("Running payload: {}", cmd)
     subprocess.run(cmd)
     log("Pyempaq done")
