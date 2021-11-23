@@ -40,7 +40,7 @@ def log(template, *args):
     print("::pyempaq::", template.format(*args))
 
 
-def get_python_exec(project_dir):
+def get_python_exec(project_dir: pathlib.Path) -> pathlib.Path:
     """Return the Python exec to use.
 
     If a venv is present (just created or from a previous unpack) use it, else just use
@@ -50,7 +50,7 @@ def get_python_exec(project_dir):
     if venv_dir.exists():
         executable = find_venv_bin(venv_dir, "python")
     else:
-        executable = sys.executable
+        executable = pathlib.Path(sys.executable)
     return executable
 
 
@@ -68,6 +68,17 @@ def build_command(python_exec: str, metadata: Dict[str, str], sys_args: List[str
     else:
         cmd.extend(metadata["exec_default_args"])
     return cmd
+
+
+def run_command(venv_bin_dir: pathlib.Path, cmd: List[str]) -> None:
+    """Run the command with a custom context."""
+    newenv = os.environ.copy()
+    venv_bin_dir_str = str(venv_bin_dir)
+    if "PATH" in newenv:
+        newenv["PATH"] = newenv["PATH"] + ":" + venv_bin_dir_str
+    else:
+        newenv["PATH"] = venv_bin_dir_str
+    subprocess.run(cmd, env=newenv)
 
 
 def run():
@@ -117,12 +128,13 @@ def run():
         else:
             log("Skipping virtualenv (no requirements)")
 
-    python_exec = str(get_python_exec(project_dir))
+    python_exec = get_python_exec(project_dir)
     os.chdir(original_project_dir)
 
-    cmd = build_command(python_exec, metadata, sys.argv[1:])
+    cmd = build_command(str(python_exec), metadata, sys.argv[1:])
     log("Running payload: {}", cmd)
-    subprocess.run(cmd)
+    venv_bin_dir = python_exec.parent
+    run_command(venv_bin_dir, cmd)
     log("Pyempaq done")
 
 

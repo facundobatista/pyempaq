@@ -75,9 +75,10 @@ def test_basic_cycle_full(tmp_path):
     os.chdir(cleandir)
     cmd = [sys.executable, "testproject.pyz"]
     proc = subprocess.run(
-        cmd, check=True,
+        cmd,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     output_lines = proc.stdout.split("\n")
+    assert proc.returncode == 0, "\n".join(output_lines)
 
     # verify output
     # XXX Facundo 2021-07-29: now we just check the info is there, in the future we want to check
