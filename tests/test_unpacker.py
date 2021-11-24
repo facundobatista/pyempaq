@@ -4,7 +4,10 @@
 
 """Unpacker tests."""
 
-from pyempaq.unpacker import build_command
+from pathlib import Path
+from unittest.mock import patch
+
+from pyempaq.unpacker import build_command, run_command
 
 
 def test_buildcommand_script_default_empty():
@@ -60,3 +63,35 @@ def test_buildcommand_script_sysargs():
     }
     cmd = build_command("python.exe", metadata, ["--bar"])
     assert cmd == ["python.exe", "mystuff.py", "--bar"]
+
+
+def test_runcommand_with_env_path(monkeypatch):
+    """Run a command with a PATH in the env."""
+    cmd = ["foo", "bar"]
+    monkeypatch.setenv("TEST_PYEMPAQ", "123")
+    monkeypatch.setenv("PATH", "previous-path")
+
+    with patch("subprocess.run") as run_mock:
+        run_command(Path("test-venv-dir"), cmd)
+
+    (call1,) = run_mock.call_args_list
+    assert call1[0] == (cmd,)
+    passed_env = call1[1]["env"]
+    assert passed_env["TEST_PYEMPAQ"] == "123"
+    assert passed_env["PATH"] == "previous-path:test-venv-dir"
+
+
+def test_runcommand_no_env_path(monkeypatch):
+    """Run a command without a PATH in the env."""
+    cmd = ["foo", "bar"]
+    monkeypatch.setenv("TEST_PYEMPAQ", "123")
+    monkeypatch.delenv("PATH")
+
+    with patch("subprocess.run") as run_mock:
+        run_command(Path("test-venv-dir"), cmd)
+
+    (call1,) = run_mock.call_args_list
+    assert call1[0] == (cmd,)
+    passed_env = call1[1]["env"]
+    assert passed_env["TEST_PYEMPAQ"] == "123"
+    assert passed_env["PATH"] == "test-venv-dir"
