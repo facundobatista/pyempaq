@@ -184,3 +184,8 @@ You should see the project's reportings that we mentioned above (**note**: these
     Module requests imported .../pyempaq/projectname-20210722013526/venv/lib/python3.8/site-packages/requests/__init__.py
 
 This shows that what you've run actually started, accessed the internal modules and other files, and imported correctly a custom-installed dependency.
+
+
+## How to contribute to the project?
+
+Please check [the how to contribute](https://github.com/facundobatista/pyempaq/CONTRIBUTING.md) instructions.
