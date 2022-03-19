@@ -15,6 +15,7 @@ import uuid
 import venv
 import zipapp
 from collections import namedtuple
+import pkg_resources
 
 from pyempaq.config_manager import load_config, ConfigError
 
@@ -38,7 +39,9 @@ def find_venv_bin(basedir, exec_base):
         # windows environment
         return bin_dir / f"{exec_base}.exe"
 
-    raise RuntimeError(f"Binary not found inside venv; subdirs: {list(basedir.iterdir())}")
+    raise RuntimeError(
+        f"Binary not found inside venv; subdirs: {list(basedir.iterdir())}"
+    )
 
 
 def logged_exec(cmd):
@@ -47,7 +50,11 @@ def logged_exec(cmd):
     print(f"Executing external command: {cmd}")
     try:
         proc = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            universal_newlines=True,
+        )
     except Exception as err:
         raise ExecutionError(f"Command {cmd} crashed with {err!r}")
     stdout = []
@@ -144,8 +151,17 @@ def main():
     """Manage CLI interaction and call pack."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "source", type=pathlib.Path,
-        help="The source file (pyempaq.yaml) or the directory where to find it.")
+        "source",
+        type=pathlib.Path,
+        help="The source file (pyempaq.yaml) or the directory where to find it.",
+    )
+    parser.add_argument(
+        "--version",
+        "-V",
+        action="version",
+        version=f"%(prog)s {pkg_resources.get_distribution('pyempaq').version}",
+        help="The current version of pyempaq.",
+    )
     args = parser.parse_args()
     try:
         print(f"Parsing configuration in {str(args.source)!r}")
