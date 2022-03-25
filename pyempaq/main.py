@@ -14,7 +14,6 @@ import tempfile
 import uuid
 import venv
 import zipapp
-import logging
 from collections import namedtuple
 import logging
 
@@ -25,8 +24,6 @@ from pyempaq.config_manager import load_config, ConfigError
 logging.basicConfig(format='%(asctime)s.%(msecs)05d | %(levelname)s | %(message)s', datefmt='%I:%M:%S')
 
 logger = logging.getLogger(__name__)
-
-
 
 
 # collected arguments
