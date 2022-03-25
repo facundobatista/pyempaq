@@ -21,7 +21,8 @@ from pyempaq.config_manager import load_config, ConfigError
 
 
 #formatting logging
-logging.basicConfig(format='%(asctime)s.%(msecs)05d | %(levelname)s | %(message)s', datefmt='%I:%M:%S')
+logging.basicConfig(format='%(asctime)s.%(msecs)05d | %(levelname)s | %(message)s',
+                    datefmt='%I:%M:%S')
 
 logger = logging.getLogger(__name__)
 
@@ -154,7 +155,19 @@ def main():
     parser.add_argument(
         "source", type=pathlib.Path,
         help="The source file (pyempaq.yaml) or the directory where to find it.")
+    parser.add_argument(
+        '-v', '--verbose',
+        help="Show detailed information, typically of interest only when diagnosing problems.",
+        action="store_const", dest="loglevel", const=logging.DEBUG)
+    parser.add_argument(
+        '-q', '--quiet',
+        help="Only events of WARNING level and above will be tracked",
+        action="store_const", dest="loglevel", const=logging.WARNING)
     args = parser.parse_args()
+
+    if not args.loglevel is None:
+        logging.getLogger().setLevel(args.loglevel)
+
     try:
         logger.info(f"Parsing configuration in {str(args.source)!r}")
         config = load_config(args.source)
@@ -163,5 +176,4 @@ def main():
         for err in err.errors:
             logger.info(err, file=sys.stderr)
         exit(1)
-
     pack(config)
