@@ -7,6 +7,7 @@
 import argparse
 import json
 import pathlib
+import os
 import shutil
 import subprocess
 import sys
@@ -16,6 +17,7 @@ import venv
 import zipapp
 from collections import namedtuple
 
+from pyempaq.common import find_venv_bin
 from pyempaq.config_manager import load_config, ConfigError
 
 # collected arguments
@@ -24,21 +26,6 @@ Args = namedtuple("Args", "project_name basedir entrypoint requirement_files")
 
 class ExecutionError(Exception):
     """The subprocess didn't finish ok."""
-
-
-def find_venv_bin(basedir, exec_base):
-    """Heuristics to find the pip executable in different platforms."""
-    bin_dir = basedir / "bin"
-    if bin_dir.exists():
-        # linux-like environment
-        return bin_dir / exec_base
-
-    bin_dir = basedir / "Scripts"
-    if bin_dir.exists():
-        # windows environment
-        return bin_dir / f"{exec_base}.exe"
-
-    raise RuntimeError(f"Binary not found inside venv; subdirs: {list(basedir.iterdir())}")
 
 
 def logged_exec(cmd):
@@ -88,6 +75,12 @@ def pack(config):
     # copy all the project content inside "orig" in temp dir
     origdir = tmpdir / "orig"
     shutil.copytree(config.basedir, origdir)
+
+    # copy the common module
+    os.mkdir(f"{tmpdir}/pyempaq")
+    common_src = pathlib.Path(__file__).parent / "common.py"
+    common_final_src = tmpdir / "pyempaq/common.py"
+    shutil.copy(common_src, common_final_src)
 
     # copy the unpacker as the entry point of the zip
     unpacker_src = pathlib.Path(__file__).parent / "unpacker.py"

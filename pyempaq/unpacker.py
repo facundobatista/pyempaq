@@ -14,25 +14,12 @@ import venv
 import zipfile
 from typing import List, Dict
 
+from pyempaq.common import find_venv_bin
+
 
 # this is the directory for the NEW virtualenv created for the project (not the packed
 # one to run unpacker itself)
 PROJECT_VENV_DIR = "project_venv"
-
-
-def find_venv_bin(basedir, exec_base):
-    """Heuristics to find the pip executable in different platforms."""
-    bin_dir = basedir / "bin"
-    if bin_dir.exists():
-        # linux-like environment
-        return bin_dir / exec_base
-
-    bin_dir = basedir / "Scripts"
-    if bin_dir.exists():
-        # windows environment
-        return bin_dir / "{}.exe".format(exec_base)
-
-    raise RuntimeError("Binary not found inside venv; subdirs: {}".format(list(basedir.iterdir())))
 
 
 def log(template, *args):
