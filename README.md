@@ -188,4 +188,4 @@ This shows that what you've run actually started, accessed the internal modules 
 
 ## How to contribute to the project?
 
-Please check [the how to contribute](https://github.com/facundobatista/pyempaq/CONTRIBUTING.md) instructions.
+Please check [the how to contribute](CONTRIBUTING.md) instructions.
