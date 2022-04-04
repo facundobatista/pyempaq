@@ -20,9 +20,9 @@ import logging
 from pyempaq.config_manager import load_config, ConfigError
 
 
-#formatting logging
-logging.basicConfig(format='%(asctime)s.%(msecs)05d | %(levelname)s | %(message)s',
-                    datefmt='%I:%M:%S')
+# formatting logging
+logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)-5s %(message)s',
+                    datefmt='%H:%M:%S')
 
 logger = logging.getLogger(__name__)
 
@@ -165,7 +165,7 @@ def main():
         action="store_const", dest="loglevel", const=logging.WARNING)
     args = parser.parse_args()
 
-    if not args.loglevel is None:
+    if args.loglevel is not None:
         logging.getLogger().setLevel(args.loglevel)
 
     try:
