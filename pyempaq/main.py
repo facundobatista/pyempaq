@@ -7,7 +7,6 @@
 import argparse
 import json
 import pathlib
-import os
 import shutil
 import subprocess
 import sys
@@ -69,6 +68,7 @@ def get_pip():
 
 def pack(config):
     """Pack."""
+    project_root = pathlib.Path(__file__).parent
     tmpdir = pathlib.Path(tempfile.mkdtemp())
     print(f"DEBUG packer: working in temp dir {str(tmpdir)!r}")
 
@@ -77,13 +77,14 @@ def pack(config):
     shutil.copytree(config.basedir, origdir)
 
     # copy the common module
-    os.mkdir(f"{tmpdir}/pyempaq")
-    common_src = pathlib.Path(__file__).parent / "common.py"
-    common_final_src = tmpdir / "pyempaq/common.py"
+    pyempaq_dir = tmpdir / "pyempaq"
+    pyempaq_dir.mkdir()
+    common_src = project_root / "common.py"
+    common_final_src = tmpdir / "pyempaq" / "common.py"
     shutil.copy(common_src, common_final_src)
 
     # copy the unpacker as the entry point of the zip
-    unpacker_src = pathlib.Path(__file__).parent / "unpacker.py"
+    unpacker_src = project_root / "unpacker.py"
     unpacker_final_main = tmpdir / "__main__.py"
     shutil.copy(unpacker_src, unpacker_final_main)
 
