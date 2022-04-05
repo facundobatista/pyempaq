@@ -1,8 +1,8 @@
-# Copyright 2021 Facundo Batista
+# Copyright 2022 Facundo Batista
 # Licensed under the GPL v3 License
 # For further info, check https://github.com/facundobatista/pyempaq
 
-"""Common functionality."""
+"""Common functionality for packer and unpucker modules."""
 
 def find_venv_bin(basedir, exec_base):
     """Heuristics to find the pip executable in different platforms."""
