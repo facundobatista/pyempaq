@@ -25,7 +25,7 @@ You can try yourself some packed with PyEmpaq examples, very easy, just download
 ![logo](https://github.com/facundobatista/pyempaq/blob/main/resources/logo-256.png?raw=True)
 
 
-You can install `pyempaq` directly from PyPI; see [instructions below](https://github.com/facundobatista/pyempaq#how-to-install).
+You can install `pyempaq` directly from PyPI; see [instructions below](https://github.com/facundobatista/pyempaq#how-to-install-pyempaq).
 
 PyEmpaq is security friendly, there is nothing obscure or secretly shipped when you distribute your project with it: anybody can just open the `pyz` file (it's just a ZIP) and inspect it.
 
