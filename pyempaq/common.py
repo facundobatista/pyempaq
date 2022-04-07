@@ -4,6 +4,7 @@
 
 """Common functionality for packer and unpucker modules."""
 
+
 def find_venv_bin(basedir, exec_base):
     """Heuristics to find the pip executable in different platforms."""
     bin_dir = basedir / "bin"
@@ -17,4 +18,3 @@ def find_venv_bin(basedir, exec_base):
         return bin_dir / f"{exec_base}.exe"
 
     raise RuntimeError(f"Binary not found inside venv; subdirs: {list(basedir.iterdir())}")
-
