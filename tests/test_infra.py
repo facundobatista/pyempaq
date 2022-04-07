@@ -30,7 +30,7 @@ def test_pep8():
     """Verify all files are nicely styled."""
     python_filepaths = get_python_filepaths()
     style_guide = get_style_guide()
-    fake_stdout = io.StringIO()
+    fake_stdout = io.TextIOWrapper(io.BytesIO())
     with patch("sys.stdout", fake_stdout):
         report = style_guide.check_files(python_filepaths)
 
@@ -39,10 +39,12 @@ def test_pep8():
         return
 
     # grab on which files we have issues
-    flake8_issues = fake_stdout.getvalue().split("\n")
+    fake_stdout.seek(0)
+    flake8_issues = fake_stdout.read().split("\n")
 
     if flake8_issues:
-        msg = "Please fix the following flake8 issues!\n" + "\n".join(flake8_issues)
+        indented_issues = [f" - {issue}" for issue in flake8_issues if issue.strip()]
+        msg = "Please fix the following flake8 issues!\n" + "\n".join(indented_issues)
         pytest.fail(msg, pytrace=False)
 
 
