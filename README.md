@@ -25,7 +25,7 @@ You can try yourself some packed with PyEmpaq examples, very easy, just download
 ![logo](https://github.com/facundobatista/pyempaq/blob/main/resources/logo-256.png?raw=True)
 
 
-You can install `pyempaq` directly from PyPI; see [instructions below](https://github.com/facundobatista/pyempaq#how-to-install).
+You can install `pyempaq` directly from PyPI; see [instructions below](https://github.com/facundobatista/pyempaq#how-to-install-pyempaq).
 
 PyEmpaq is security friendly, there is nothing obscure or secretly shipped when you distribute your project with it: anybody can just open the `pyz` file (it's just a ZIP) and inspect it.
 
@@ -111,7 +111,7 @@ The following is the structure of the `pyempaq.yaml` configuration file:
 
     - `entrypoint` [†]: freeform, as a list of strings; when unpacking PyEmpaq will only insert the proper python3 at the beginning: `python3 STR1 STR2 ...`.
 
-    - `default-args` [optional]: the default arguments to be passed to the script/module/entrypoint (if not overriden when the distributed `.pyz` is executed); **note** that this option is [not available yet](https://github.com/facundobatista/pyempaq/issues/14).
+    - `default-args` [optional]: the default arguments to be passed to the script/module/entrypoint (if not overriden when the distributed `.pyz` is executed).
 
 - `requirements`: a list of filepaths pointing to the requirement files with pip-installable dependencies.
 
@@ -188,4 +188,4 @@ This shows that what you've run actually started, accessed the internal modules 
 
 ## How to contribute to the project?
 
-Please check [the how to contribute](https://github.com/facundobatista/pyempaq/CONTRIBUTING.md) instructions.
+Please check [the how to contribute](https://github.com/facundobatista/pyempaq/blob/main/CONTRIBUTING.md) instructions.
