@@ -21,7 +21,7 @@ def test_find_venv_bin():
     l_dir.mkdir()
     find_venv = find_venv_bin(tmpdir, "pip_foo")
     assert find_venv == tmpdir / "bin" / "pip_foo"
-    shutil.rmtree(l_dir) # for ignore linux env
+    shutil.rmtree(l_dir)  # for ignore linux env
 
     # windows enviroment
     w_dir = tmpdir / "Scripts"
