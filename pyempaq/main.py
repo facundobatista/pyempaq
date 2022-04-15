@@ -7,6 +7,7 @@
 import argparse
 import json
 import pathlib
+import re
 import shutil
 import subprocess
 import sys
@@ -157,6 +158,33 @@ def main():
         '-q', '--quiet',
         help="Only events of WARNING level and above will be tracked",
         action="store_const", dest="loglevel", const=logging.WARNING)
+    try:
+        # version = pkg_resources.get_distribution("pyempaq").
+        # version - this could be used to get the version of the "package"
+        # however, it's not necessarily the same as the version of the "module"
+        # parse the setup.py file to get the version
+        with open("setup.py", "rt") as fh:
+            setup_py = fh.read()
+            version = re.search(r"version\s*=\s*['\"]([^'\"]+)['\"]", setup_py)[1]
+        from pyempaq.config_manager import Config
+        parser.add_argument(
+            '-V', '--version',
+            action='version',
+            version=f"pyempaq {version}")
+        args = parser.parse_args()
+
+        # set the logging level
+        logging.basicConfig(level=args.loglevel)
+
+        # load the config
+        config = Config.from_file(args.source)
+
+        # pack
+        pack(config)
+    except Exception as err:
+        logger.error(f"Error: {err}")
+        sys.exit(1)
+    # quit after displaying the version
     args = parser.parse_args()
 
     if args.loglevel is not None:
