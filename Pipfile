@@ -8,6 +8,3 @@ verify_ssl = true
 [packages]
 pydantic = "*"
 PyYAML = "*"
-
-[requires]
-python_version = "3.9"
