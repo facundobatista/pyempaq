@@ -4,27 +4,28 @@
 
 """Common functions module tests."""
 
-from pathlib import Path
-import shutil
-import tempfile
+import pytest
 
 from pyempaq.common import find_venv_bin
 
 
-def test_find_venv_bin():
-    """Search and find the directory for the executable."""
-    # temporary test directory
-    tmpdir = Path(tempfile.mkdtemp())
-
-    # linux-like enviroment
-    l_dir = tmpdir / "bin"
+def test_find_venv_bin_l(tmp_path):
+    """Search and find the directory for the executable (linux-like env)."""
+    l_dir = tmp_path / "bin"
     l_dir.mkdir()
-    find_venv = find_venv_bin(tmpdir, "pip_foo")
-    assert find_venv == tmpdir / "bin" / "pip_foo"
-    shutil.rmtree(l_dir)  # for ignore linux env
+    find_venv = find_venv_bin(tmp_path, "pip_foo")
+    assert find_venv == tmp_path / "bin" / "pip_foo"
 
-    # windows enviroment
-    w_dir = tmpdir / "Scripts"
+
+def test_find_venv_bin_w(tmp_path):
+    """Search and find the directory for the executable (windows env)."""
+    w_dir = tmp_path / "Scripts"
     w_dir.mkdir()
-    find_venv = find_venv_bin(tmpdir, "pip_foo")
-    assert find_venv == tmpdir / "Scripts" / "pip_foo.exe"
+    find_venv = find_venv_bin(tmp_path, "pip_bar")
+    assert find_venv == tmp_path / "Scripts" / "pip_bar.exe"
+
+
+def test_find_venv_bin_no(tmp_path):
+    """Can't find directory for the executable and raise RuntimeError."""
+    with pytest.raises(RuntimeError):
+        find_venv_bin(tmp_path, "pip_baz")
