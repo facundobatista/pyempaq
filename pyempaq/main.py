@@ -19,7 +19,7 @@ from collections import namedtuple
 import logging
 
 from pyempaq.common import find_venv_bin
-from pyempaq.config_manager import load_config, ConfigError, Config
+from pyempaq.config_manager import load_config, ConfigError
 
 
 
