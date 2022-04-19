@@ -10,7 +10,8 @@ from unittest.mock import patch
 
 import pytest
 
-from pyempaq.main import get_pip, ExecutionError
+from pyempaq.main import get_pip
+from pyempaq.common import ExecutionError
 
 
 @pytest.mark.parametrize("version", [
