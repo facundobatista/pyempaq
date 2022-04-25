@@ -56,4 +56,4 @@ def test_logged_exec_retcode():
     with pytest.raises(Exception) as e:
         logged_exec(cmd_OS)
 
-    assert str(e.value) == f"Command {cmd_OS} ended with retcode 2"
+    assert str(e.value)[:-1] == f"Command {cmd_OS} ended with retcode "
