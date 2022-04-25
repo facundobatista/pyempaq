@@ -6,6 +6,7 @@
 
 import logging
 import pytest
+import sys
 
 from pyempaq.common import logged_exec, find_venv_bin
 
@@ -49,8 +50,10 @@ def test_logged_exec_error():
     assert "Command ['pip_bar', 'pip_baz'] crashed with " in str(e.value)
 
 
-def test_logged_exec_wait():
+def test_logged_exec_retcode():
     """Execute a command and ended with some return code."""
+    cmd_OS = ['dir', 'foo'] if sys.platform == "win32" else ['ls', 'foo']
     with pytest.raises(Exception) as e:
-        logged_exec(['dir', '$?'])
-    assert str(e.value) == "Command ['dir', '$?'] ended with retcode 2"
+        logged_exec(cmd_OS)
+
+    assert str(e.value) == f"Command {cmd_OS} ended with retcode 2"
