@@ -4,3 +4,4 @@ flake8
 logassert
 pydocstyle
 pytest
+pytest-subprocess
