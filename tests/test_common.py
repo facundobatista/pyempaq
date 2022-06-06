@@ -6,7 +6,6 @@
 
 from logassert import Exact
 import pytest
-import sys
 
 from pyempaq.common import logged_exec, find_venv_bin
 
@@ -41,18 +40,19 @@ def test_logged_exec(logs):
     assert Exact("Executing external command: ['echo', 'test']") in logs.debug
 
 
-def test_logged_exec_error():
+def test_logged_exec_error(fp):
     """Execute a command, raises an error."""
     with pytest.raises(Exception) as e:
-        logged_exec(["pip_bar", "pip_baz"])
+        logged_exec(["pip_baz"])
 
-    assert "Command ['pip_bar', 'pip_baz'] crashed with " in str(e.value)
+    assert str(e.value)[:32] == "Command ['pip_baz'] crashed with"
 
 
-def test_logged_exec_retcode():
+def test_logged_exec_retcode(fp):
     """Execute a command and ended with some return code."""
-    cmd_OS = ['dir', 'foo'] if sys.platform == "win32" else ['ls', 'foo']
-    with pytest.raises(Exception) as e:
-        logged_exec(cmd_OS)
+    fp.register(['pip_foo'], returncode=1800)
 
-    assert str(e.value)[:-1] == f"Command {cmd_OS} ended with retcode "
+    with pytest.raises(Exception) as e:
+        logged_exec(['pip_foo'])
+
+    assert str(e.value) == "Command ['pip_foo'] ended with retcode 1800"
