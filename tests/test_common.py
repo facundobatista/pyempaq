@@ -4,7 +4,7 @@
 
 """Common functions module tests."""
 
-import logging
+from logassert import Exact
 import pytest
 import sys
 
@@ -33,13 +33,12 @@ def test_find_venv_bin_no(tmp_path):
         find_venv_bin(tmp_path, "pip_baz")
 
 
-def test_logged_exec(caplog):
+def test_logged_exec(logs):
     """Execute a command, redirecting the output to the log. Everything OK."""
-    with caplog.at_level(logging.DEBUG):
-        stdout = logged_exec(['echo', 'test'])
+    logged_exec(['echo', 'test'])
 
-    assert stdout == ['test']
-    assert "Executing external command: ['echo', 'test']" in caplog.text
+    assert 'test' in logs.debug
+    assert Exact("Executing external command: ['echo', 'test']") in logs.debug
 
 
 def test_logged_exec_error():
