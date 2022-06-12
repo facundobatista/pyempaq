@@ -7,14 +7,13 @@
 import json
 import os
 import pathlib
-import subprocess
 import sys
 import time
 import venv
 import zipfile
 from typing import List, Dict
 
-from pyempaq.common import find_venv_bin
+from pyempaq.common import find_venv_bin, logged_exec
 
 
 # this is the directory for the NEW virtualenv created for the project (not the packed
@@ -65,7 +64,7 @@ def run_command(venv_bin_dir: pathlib.Path, cmd: List[str]) -> None:
         newenv["PATH"] = newenv["PATH"] + ":" + venv_bin_dir_str
     else:
         newenv["PATH"] = venv_bin_dir_str
-    subprocess.run(cmd, env=newenv)
+    logged_exec(cmd, env=newenv)
 
 
 def run():
@@ -109,7 +108,7 @@ def run():
             for req_file in venv_requirements:
                 cmd += ["-r", str(original_project_dir / req_file)]
             log("Installing dependencies: {}", cmd)
-            subprocess.run(cmd, check=True)
+            logged_exec(cmd)
             log("Virtualenv setup finished")
 
         else:
