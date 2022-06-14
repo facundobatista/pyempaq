@@ -36,7 +36,6 @@ def test_logged_exec(logs):
     """Execute a command, redirecting the output to the log. Everything OK."""
     logged_exec(['echo', 'test'])
 
-    assert 'test' in logs.debug
     assert Exact("Executing external command: ['echo', 'test']") in logs.debug
 
 
