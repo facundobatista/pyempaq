@@ -34,12 +34,13 @@ def test_find_venv_bin_no(tmp_path):
 
 def test_logged_exec(logs):
     """Execute a command, redirecting the output to the log. Everything OK."""
-    logged_exec(['echo', 'test'])
+    stdout = logged_exec(['echo', 'test', '123'])
 
-    assert Exact("Executing external command: ['echo', 'test']") in logs.debug
+    assert stdout == ['test 123']
+    assert Exact("Executing external command: ['echo', 'test', '123']") in logs.debug
 
 
-def test_logged_exec_error(fp):
+def test_logged_exec_error(fake_process):
     """Execute a command, raises an error."""
     with pytest.raises(Exception) as e:
         logged_exec(["pip_baz"])
@@ -47,9 +48,9 @@ def test_logged_exec_error(fp):
     assert str(e.value)[:32] == "Command ['pip_baz'] crashed with"
 
 
-def test_logged_exec_retcode(fp):
+def test_logged_exec_retcode(fake_process):
     """Execute a command and ended with some return code."""
-    fp.register(['pip_foo'], returncode=1800)
+    fake_process.register(['pip_foo'], returncode=1800)
 
     with pytest.raises(Exception) as e:
         logged_exec(['pip_foo'])
