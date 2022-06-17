@@ -5,6 +5,7 @@
 """Unpacker tests."""
 
 from pathlib import Path
+import pytest
 from unittest.mock import patch
 
 from pyempaq.unpacker import build_command, run_command
@@ -71,8 +72,9 @@ def test_runcommand_with_env_path(monkeypatch):
     monkeypatch.setenv("TEST_PYEMPAQ", "123")
     monkeypatch.setenv("PATH", "previous-path")
 
-    with patch("subprocess.run") as run_mock:
-        run_command(Path("test-venv-dir"), cmd)
+    with patch("subprocess.Popen") as run_mock:
+        with pytest.raises(Exception):
+            run_command(Path("test-venv-dir"), cmd)
 
     (call1,) = run_mock.call_args_list
     assert call1[0] == (cmd,)
@@ -87,8 +89,9 @@ def test_runcommand_no_env_path(monkeypatch):
     monkeypatch.setenv("TEST_PYEMPAQ", "123")
     monkeypatch.delenv("PATH")
 
-    with patch("subprocess.run") as run_mock:
-        run_command(Path("test-venv-dir"), cmd)
+    with patch("subprocess.Popen") as run_mock:
+        with pytest.raises(Exception):
+            run_command(Path("test-venv-dir"), cmd)
 
     (call1,) = run_mock.call_args_list
     assert call1[0] == (cmd,)

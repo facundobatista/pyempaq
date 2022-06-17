@@ -1,0 +1,3 @@
+name: print-example
+exec:
+  script: print.py

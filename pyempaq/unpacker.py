@@ -64,7 +64,8 @@ def run_command(venv_bin_dir: pathlib.Path, cmd: List[str]) -> None:
         newenv["PATH"] = newenv["PATH"] + ":" + venv_bin_dir_str
     else:
         newenv["PATH"] = venv_bin_dir_str
-    logged_exec(cmd, env=newenv)
+
+    logged_exec(cmd, enviroment=newenv)
 
 
 def run():
