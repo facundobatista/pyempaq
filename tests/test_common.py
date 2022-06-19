@@ -4,9 +4,10 @@
 
 """Common functions module tests."""
 
+from logassert import Exact
 import pytest
 
-from pyempaq.common import find_venv_bin
+from pyempaq.common import logged_exec, find_venv_bin
 
 
 def test_find_venv_bin_l(tmp_path):
@@ -29,3 +30,29 @@ def test_find_venv_bin_no(tmp_path):
     """Can't find directory for the executable and raise RuntimeError."""
     with pytest.raises(RuntimeError):
         find_venv_bin(tmp_path, "pip_baz")
+
+
+def test_logged_exec(logs):
+    """Execute a command, redirecting the output to the log. Everything OK."""
+    stdout = logged_exec(['echo', 'test', '123'])
+
+    assert stdout == ['test 123']
+    assert Exact("Executing external command: ['echo', 'test', '123']") in logs.debug
+
+
+def test_logged_exec_error(fake_process):
+    """Execute a command, raises an error."""
+    with pytest.raises(Exception) as e:
+        logged_exec(["pip_baz"])
+
+    assert str(e.value)[:32] == "Command ['pip_baz'] crashed with"
+
+
+def test_logged_exec_retcode(fake_process):
+    """Execute a command and ended with some return code."""
+    fake_process.register(['pip_foo'], returncode=1800)
+
+    with pytest.raises(Exception) as e:
+        logged_exec(['pip_foo'])
+
+    assert str(e.value) == "Command ['pip_foo'] ended with retcode 1800"
