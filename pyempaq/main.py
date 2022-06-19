@@ -6,18 +6,17 @@
 
 import argparse
 import json
+import logging
 import pathlib
 import shutil
-import subprocess
 import sys
 import tempfile
 import uuid
 import venv
 import zipapp
 from collections import namedtuple
-import logging
 
-from pyempaq.common import find_venv_bin
+from pyempaq.common import find_venv_bin, logged_exec, ExecutionError
 from pyempaq.config_manager import load_config, ConfigError
 
 
@@ -30,30 +29,6 @@ logger = logging.getLogger(__name__)
 
 # collected arguments
 Args = namedtuple("Args", "project_name basedir entrypoint requirement_files")
-
-
-class ExecutionError(Exception):
-    """The subprocess didn't finish ok."""
-
-
-def logged_exec(cmd):
-    """Execute a command, redirecting the output to the log."""
-    cmd = list(map(str, cmd))
-    logger.debug(f"Executing external command: {cmd}")
-    try:
-        proc = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-    except Exception as err:
-        raise ExecutionError(f"Command {cmd} crashed with {err!r}")
-    stdout = []
-    for line in proc.stdout:
-        line = line[:-1]
-        stdout.append(line)
-        logger.debug(f":: {line}")
-    retcode = proc.wait()
-    if retcode:
-        raise ExecutionError(f"Command {cmd} ended with retcode {retcode}")
-    return stdout
 
 
 def get_pip():
