@@ -7,6 +7,7 @@
 import json
 import os
 import pathlib
+import subprocess
 import sys
 import time
 import venv
@@ -64,7 +65,7 @@ def run_command(venv_bin_dir: pathlib.Path, cmd: List[str]) -> None:
         newenv["PATH"] = newenv["PATH"] + ":" + venv_bin_dir_str
     else:
         newenv["PATH"] = venv_bin_dir_str
-    logged_exec(cmd, env=newenv)
+    subprocess.run(cmd, env=newenv)
 
 
 def run():

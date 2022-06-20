@@ -30,7 +30,7 @@ def find_venv_bin(basedir, exec_base):
     raise RuntimeError(f"Binary not found inside venv; subdirs: {list(basedir.iterdir())}")
 
 
-def logged_exec(cmd, env=None):
+def logged_exec(cmd):
     """Execute a command, redirecting the output to the log."""
     cmd = list(map(str, cmd))
     logger.debug(f"Executing external command: {cmd}")
@@ -39,7 +39,6 @@ def logged_exec(cmd, env=None):
             cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            env=env,
             universal_newlines=True)
     except Exception as err:
         raise ExecutionError(f"Command {cmd} crashed with {err!r}")
