@@ -14,7 +14,7 @@ import venv
 import zipfile
 from typing import List, Dict
 
-from pyempaq.common import find_venv_bin
+from pyempaq.common import find_venv_bin, logged_exec
 
 
 # this is the directory for the NEW virtualenv created for the project (not the packed
@@ -109,7 +109,7 @@ def run():
             for req_file in venv_requirements:
                 cmd += ["-r", str(original_project_dir / req_file)]
             log("Installing dependencies: {}", cmd)
-            subprocess.run(cmd, check=True)
+            logged_exec(cmd)
             log("Virtualenv setup finished")
 
         else:
