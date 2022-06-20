@@ -36,10 +36,7 @@ def logged_exec(cmd):
     logger.debug(f"Executing external command: {cmd}")
     try:
         proc = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            universal_newlines=True)
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     except Exception as err:
         raise ExecutionError(f"Command {cmd} crashed with {err!r}")
     stdout = []
