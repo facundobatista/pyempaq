@@ -108,6 +108,7 @@ class Config(ModelConfigDefaults, validate_all=False):
     exec: Executor
     requirements: List[RelativeFile] = []
     dependencies: List[str] = []
+    unpack_restrictions: dict = {}
 
     @pydantic.validator("basedir")
     def ensure_basedir(cls, value):
@@ -140,6 +141,15 @@ class Config(ModelConfigDefaults, validate_all=False):
             subkeys_str = ', '.join(repr(x) for x in subkeys)
             raise ValueError(f"only one of these subkeys is allowed: {subkeys_str}")
         return values
+
+    @pydantic.validator("unpack_restrictions", pre=True)
+    def validate_unpack_restrictions(cls, value):
+        """Ensure the unpack_restrictions is valid."""
+        python_version = value["minimum_python_version"]
+
+        if not isinstance(python_version, str):
+            raise ValueError(f"{python_version!r} must be a string")
+        return value
 
 
 def _format_pydantic_errors(errors):

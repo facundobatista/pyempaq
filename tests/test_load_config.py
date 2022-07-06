@@ -163,6 +163,23 @@ def test_basedir_missing(tmp_path):
     ]
 
 
+def test_minimum_req_version_not_a_string(tmp_path):
+    """The minimum_python_version must be a string."""
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text("""
+        name: testproject
+        unpack_restrictions:
+            minimum_python_version: 3.8
+    """)
+
+    with pytest.raises(ConfigError) as cm:
+        load_config(config_file)
+    assert cm.value.errors == [
+        "- 'exec': field required",
+        "- 'unpack_restrictions': 3.8 must be a string",
+    ]
+
+
 # -- check the different exec entries
 
 def test_exec_script_ok_relative(tmp_path):
