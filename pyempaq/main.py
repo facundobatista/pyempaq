@@ -8,6 +8,7 @@ import argparse
 import json
 import logging
 import pathlib
+import re
 import shutil
 import sys
 import tempfile
@@ -18,6 +19,7 @@ from collections import namedtuple
 
 from pyempaq.common import find_venv_bin, logged_exec, ExecutionError
 from pyempaq.config_manager import load_config, ConfigError
+
 
 
 # formatting logging
@@ -132,6 +134,13 @@ def main():
         '-q', '--quiet',
         help="Only events of WARNING level and above will be tracked",
         action="store_const", dest="loglevel", const=logging.WARNING)
+    # if argument passed is -v, execute the function
+    parser.add_argument(
+            '-V', '--version',
+            action='version',
+            version=f"pyempaq {get_version()}")
+
+    # quit after displaying the version
     args = parser.parse_args()
 
     if args.loglevel is not None:
@@ -146,3 +155,10 @@ def main():
             logger.info(err, file=sys.stderr)
         exit(1)
     pack(config)
+
+def get_version():
+    """Get the version of the package."""
+    with open("setup.py", "rt") as fh:
+        setup_py = fh.read()
+        version = re.search(r"version\s*=\s*['\"]([^'\"]+)['\"]", setup_py)[1]
+    return version
