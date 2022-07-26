@@ -29,6 +29,8 @@ You can install `pyempaq` directly from PyPI; see [instructions below](https://g
 
 PyEmpaq is security friendly, there is nothing obscure or secretly shipped when you distribute your project with it: anybody can just open the `pyz` file (it's just a ZIP) and inspect it.
 
+It's also safe regarding licenses when distributing your packed software. Unlike packing mechanisms that rely on putting inside a big blob, with PyEmpaq you don't have to worry about the licenses of your software dependencies (and the dependencies' dependencies) in regard to distributing them.
+
 
 ### Limitations:
 
