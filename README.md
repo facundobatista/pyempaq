@@ -92,7 +92,13 @@ Examples:
 
 - `pyempaq ~/repo/proj/config.yaml`
 
-**Note**: [in the future](https://github.com/facundobatista/pyempaq/issues/8) we will be able to control verbosity, we're not there yet.
+You can control verbosity by adding these command line parameters to control logging levels:
+
+- `-v, --verbose` - Show detailed information, typically of interest only when diagnosing problems.
+- `-q, --quiet` - Only events of WARNING level and above will be tracked.
+
+> **Note**
+> In the **execution phase**, if you have an environment variable `PYEMPAQ_DEBUG=1` it will show the Pyempaq log lines during the execution.
 
 
 ## The configuration file
