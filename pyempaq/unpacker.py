@@ -24,7 +24,9 @@ PROJECT_VENV_DIR = "project_venv"
 
 def log(template, *args):
     """Print debug lines if proper envvar is present."""
-    print("::pyempaq::", template.format(*args))
+    envar = os.environ.get("PYEMPAQ_DEBUG", 0)
+    if envar == "1":
+        print("::pyempaq::", template.format(*args))
 
 
 def get_python_exec(project_dir: pathlib.Path) -> pathlib.Path:
