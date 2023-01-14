@@ -70,6 +70,55 @@ def run_command(venv_bin_dir: pathlib.Path, cmd: List[str]) -> None:
     subprocess.run(cmd, env=newenv)
 
 
+def setup_project_directory(
+    zf: zipfile.ZipFile,
+    project_dir: pathlib.Path,
+    venv_requirements: List[pathlib.Path],
+):
+    """Set up the project directory (if needed).
+
+    Process in case it's needed:
+
+    - create the directory
+
+    - extract everything from the zipfile into the new directory
+
+    - if there are virtualenv dependencies:
+
+        - create the virtualenv
+
+        - install dependencies there
+
+    After successful set up a flag is left in the directory so next time the unpacker is run
+    it recognizes everything is done (note that having the directory is not enough, it may
+    have been partially set up).
+    """
+    log("Creating project dir {!r}", str(project_dir))
+    project_dir.mkdir()
+
+    log("Extracting pyempaq content")
+    zf.extractall(path=project_dir)
+
+    #if project_dir.exists():
+    #    log("Reusing project dir {!r}", str(project_dir))
+    #else:
+
+    #    if venv_requirements:
+    #        log("Creating payload virtualenv")
+    #        venv_dir = project_dir / PROJECT_VENV_DIR
+    #        venv.create(venv_dir, with_pip=True)
+    #        pip_exec = find_venv_bin(venv_dir, "pip3")
+    #        cmd = [str(pip_exec), "install"]
+    #        for req_file in venv_requirements:
+    #            cmd += ["-r", str(req_file)]
+    #        log("Installing dependencies: {}", cmd)
+    #        logged_exec(cmd)
+    #        log("Virtualenv setup finished")
+
+    #    else:
+    #        log("Skipping virtualenv (no requirements)")
+
+
 def run():
     """Run the unpacker."""
     log("Pyempaq start")
@@ -92,30 +141,8 @@ def run():
     timestamp = time.strftime("%Y%m%d%H%M%S", time.gmtime(pyempaq_filepath.stat().st_ctime))
     project_dir = pyempaq_dir / "{}-{}".format(metadata["project_name"], timestamp)
     original_project_dir = project_dir / "orig"
-    if project_dir.exists():
-        log("Reusing project dir {!r}", str(project_dir))
-    else:
-        log("Creating project dir {!r}", str(project_dir))
-        project_dir.mkdir()
-
-        log("Extracting pyempaq content")
-        zf.extractall(path=project_dir)
-
-        venv_requirements = metadata["requirement_files"]
-        if venv_requirements:
-            log("Creating payload virtualenv")
-            venv_dir = project_dir / PROJECT_VENV_DIR
-            venv.create(venv_dir, with_pip=True)
-            pip_exec = find_venv_bin(venv_dir, "pip3")
-            cmd = [str(pip_exec), "install"]
-            for req_file in venv_requirements:
-                cmd += ["-r", str(original_project_dir / req_file)]
-            log("Installing dependencies: {}", cmd)
-            logged_exec(cmd)
-            log("Virtualenv setup finished")
-
-        else:
-            log("Skipping virtualenv (no requirements)")
+    venv_requirements = [original_project_dir / fname for fname in metadata["requirement_files"]]
+    setup_project_directory(zf, project_dir, venv_requirements)
 
     python_exec = get_python_exec(project_dir)
     os.chdir(original_project_dir)
