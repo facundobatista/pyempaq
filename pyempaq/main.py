@@ -1,4 +1,4 @@
-# Copyright 2021 Facundo Batista
+# Copyright 2021-2023 Facundo Batista
 # Licensed under the GPL v3 License
 # For further info, check https://github.com/facundobatista/pyempaq
 
@@ -9,7 +9,6 @@ import json
 import logging
 import pathlib
 import shutil
-import sys
 import tempfile
 import uuid
 import venv
@@ -20,12 +19,10 @@ from pyempaq.common import find_venv_bin, logged_exec, ExecutionError
 from pyempaq.config_manager import load_config, ConfigError
 
 
-# formatting logging
-logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)-5s %(message)s',
-                    datefmt='%H:%M:%S')
-
+# setup logging
+logging.basicConfig(
+    format='%(asctime)s.%(msecs)03d %(levelname)-5s %(message)s', datefmt='%H:%M:%S')
 logger = logging.getLogger(__name__)
-
 
 # collected arguments
 Args = namedtuple("Args", "project_name basedir entrypoint requirement_files")
@@ -54,7 +51,7 @@ def pack(config):
     """Pack."""
     project_root = pathlib.Path(__file__).parent
     tmpdir = pathlib.Path(tempfile.mkdtemp())
-    logger.debug(f"DEBUG packer: working in temp dir {str(tmpdir)!r}")
+    logger.debug("Working in temp dir %r", str(tmpdir))
 
     # copy all the project content inside "orig" in temp dir
     origdir = tmpdir / "orig"
@@ -73,14 +70,14 @@ def pack(config):
     shutil.copy(unpacker_src, unpacker_final_main)
 
     # build a dir with the dependencies needed by the unpacker
-    logger.debug("DEBUG packer: building internal dependencies dir")
+    logger.debug("Building internal dependencies dir")
     venv_dir = tmpdir / "venv"
     pip = get_pip()
     cmd = [pip, "install", "appdirs", f"--target={venv_dir}"]
     logged_exec(cmd)
 
     # store the needed metadata
-    logger.debug("DEBUG packer: saving metadata from config", config)
+    logger.debug("Saving metadata from config %s", config)
     metadata = {
         "requirement_files": [str(path) for path in config.requirements],
         "project_name": config.name,
@@ -115,7 +112,7 @@ def pack(config):
     # clean the temporary directory
     shutil.rmtree(tmpdir)
 
-    logger.info("Done, project packed in", packed_filepath)
+    logger.info("Done, project packed in %r", str(packed_filepath))
 
 
 def main():
@@ -138,11 +135,11 @@ def main():
         logging.getLogger().setLevel(args.loglevel)
 
     try:
-        logger.info(f"Parsing configuration in {str(args.source)!r}")
+        logger.info("Parsing configuration in %r", str(args.source))
         config = load_config(args.source)
     except ConfigError as err:
-        logger.info(err, file=sys.stderr)
+        logger.error(err)
         for err in err.errors:
-            logger.info(err, file=sys.stderr)
+            logger.error(err)
         exit(1)
     pack(config)
