@@ -5,6 +5,7 @@
 """Unpacking functionality.."""
 
 import json
+import logging
 import os
 import pathlib
 import subprocess
@@ -21,12 +22,15 @@ from pyempaq.common import find_venv_bin, logged_exec
 # one to run unpacker itself)
 PROJECT_VENV_DIR = "project_venv"
 
-
-def log(template, *args):
-    """Print debug lines if proper envvar is present."""
-    envar = os.environ.get("PYEMPAQ_DEBUG", 0)
-    if envar == "1":
-        print("::pyempaq::", template.format(*args))
+# setup logging
+logger = logging.getLogger()
+handler = logging.StreamHandler()
+fmt = logging.Formatter("::pyempaq:: %(asctime)s %(message)s")
+handler.setFormatter(fmt)
+handler.setLevel(0)
+logger.addHandler(handler)
+logger.setLevel(logging.ERROR if os.environ.get("PYEMPAQ_DEBUG") is None else logging.INFO)
+log = logger.info
 
 
 def get_python_exec(project_dir: pathlib.Path) -> pathlib.Path:
@@ -127,7 +131,7 @@ def run():
     pyempaq_filepath = pathlib.Path.cwd() / sys.argv[0]
     zf = zipfile.ZipFile(pyempaq_filepath)
     metadata = json.loads(zf.read("metadata.json").decode("utf8"))
-    log("Loaded metadata: {}", metadata)
+    log("Loaded metadata: %s", metadata)
 
     # load appdirs from the builtin venv
     sys.path.insert(0, f"{pyempaq_filepath}/venv/")
@@ -135,7 +139,7 @@ def run():
 
     pyempaq_dir = pathlib.Path(appdirs.user_data_dir()) / 'pyempaq'
     pyempaq_dir.mkdir(parents=True, exist_ok=True)
-    log("Temp base dir: {!r}", str(pyempaq_dir))
+    log("Temp base dir: %r", str(pyempaq_dir))
 
     # create a temp dir and extract the project there
     timestamp = time.strftime("%Y%m%d%H%M%S", time.gmtime(pyempaq_filepath.stat().st_ctime))
@@ -148,7 +152,7 @@ def run():
     os.chdir(original_project_dir)
 
     cmd = build_command(str(python_exec), metadata, sys.argv[1:])
-    log("Running payload: {}", cmd)
+    log("Running payload: %s", cmd)
     venv_bin_dir = python_exec.parent
     run_command(venv_bin_dir, cmd)
     log("Pyempaq done")
