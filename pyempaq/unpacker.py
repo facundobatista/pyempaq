@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import pathlib
+import shutil
 import subprocess
 import sys
 import time
@@ -21,6 +22,9 @@ from pyempaq.common import find_venv_bin, logged_exec
 # this is the directory for the NEW virtualenv created for the project (not the packed
 # one to run unpacker itself)
 PROJECT_VENV_DIR = "project_venv"
+
+# the file name to flag that the project setup completed succesfully
+COMPLETE_FLAG_FILE = "complete.flag"
 
 # setup logging
 logger = logging.getLogger()
@@ -97,30 +101,34 @@ def setup_project_directory(
     it recognizes everything is done (note that having the directory is not enough, it may
     have been partially set up).
     """
-    log("Creating project dir {!r}", str(project_dir))
+    if project_dir.exists():
+        if (project_dir / COMPLETE_FLAG_FILE).exists():
+            log("Reusing project dir %r", str(project_dir))
+            return
+        log("Found incomplete project dir %r", str(project_dir))
+        shutil.rmtree(project_dir)
+        log("Removed old incomplete dir")
+
+    log("Creating project dir %r", str(project_dir))
     project_dir.mkdir()
 
     log("Extracting pyempaq content")
     zf.extractall(path=project_dir)
 
-    #if project_dir.exists():
-    #    log("Reusing project dir {!r}", str(project_dir))
-    #else:
-
-    #    if venv_requirements:
-    #        log("Creating payload virtualenv")
-    #        venv_dir = project_dir / PROJECT_VENV_DIR
-    #        venv.create(venv_dir, with_pip=True)
-    #        pip_exec = find_venv_bin(venv_dir, "pip3")
-    #        cmd = [str(pip_exec), "install"]
-    #        for req_file in venv_requirements:
-    #            cmd += ["-r", str(req_file)]
-    #        log("Installing dependencies: {}", cmd)
-    #        logged_exec(cmd)
-    #        log("Virtualenv setup finished")
-
-    #    else:
-    #        log("Skipping virtualenv (no requirements)")
+    if venv_requirements:
+        log("Creating payload virtualenv")
+        venv_dir = project_dir / PROJECT_VENV_DIR
+        venv.create(venv_dir, with_pip=True)
+        pip_exec = find_venv_bin(venv_dir, "pip3")
+        cmd = [str(pip_exec), "install"]
+        for req_file in venv_requirements:
+            cmd += ["-r", str(req_file)]
+        log("Installing dependencies: %s", cmd)
+        logged_exec(cmd)
+        log("Virtualenv setup finished")
+    else:
+        log("Skipping virtualenv (no requirements)")
+    (project_dir / COMPLETE_FLAG_FILE).touch()
 
 
 def run():
