@@ -97,6 +97,8 @@ You can control verbosity by adding these command line parameters to control log
 - `-v, --verbose` - Show detailed information, typically of interest only when diagnosing problems.
 - `-q, --quiet` - Only events of WARNING level and above will be tracked.
 
+All that said, there is an special option `-V, --version` that if used will just print the version and exit.
+
 > **Note**
 > In the **execution phase**, if you have an environment variable `PYEMPAQ_DEBUG=1` it will show the Pyempaq log lines during the execution.
 
