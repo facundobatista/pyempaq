@@ -11,7 +11,7 @@ from setuptools import setup
 
 
 def get_version():
-    """Retrieves package version from the file.
+    """Retrieve the package version from the file.
 
     This is done by parsing statically the file, not importing it as a module,
     because the version is needed in intermediate steps where the package itself
