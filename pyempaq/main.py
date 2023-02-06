@@ -15,6 +15,7 @@ import venv
 import zipapp
 from collections import namedtuple
 
+from pyempaq import __version__
 from pyempaq.common import find_venv_bin, logged_exec, ExecutionError
 from pyempaq.config_manager import load_config, ConfigError
 
@@ -127,8 +128,12 @@ def main():
         action="store_const", dest="loglevel", const=logging.DEBUG)
     parser.add_argument(
         '-q', '--quiet',
-        help="Only events of WARNING level and above will be tracked",
+        help="Only events of WARNING level and above will be tracked.",
         action="store_const", dest="loglevel", const=logging.WARNING)
+    parser.add_argument(
+        '-V', '--version',
+        help="Print the version and exit.",
+        action="version", version=__version__)
     args = parser.parse_args()
 
     if args.loglevel is not None:
