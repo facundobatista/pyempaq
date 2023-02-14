@@ -144,7 +144,7 @@ class Config(ModelConfigDefaults, validate_all=False):
 
     @pydantic.validator("unpack_restrictions", pre=True)
     def validate_unpack_restrictions(cls, value):
-        """Ensure the unpack_restrictions is valid."""
+        """Ensure unpack_restrictions are valid."""
         python_version = value["minimum_python_version"]
 
         if not isinstance(python_version, str):

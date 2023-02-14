@@ -86,6 +86,19 @@ def run():
     pyempaq_dir.mkdir(parents=True, exist_ok=True)
     log("Temp base dir: {!r}", str(pyempaq_dir))
 
+    # Check unpack restrictions
+
+    current_version = 3.8  # TODO - from pkg_resources import parse_version
+
+    if min_py_version := metadata["unpack_restrictions"]["minimum_python_version"]:
+        if current_version < min_py_version:
+            warning_msg = "WARNING: Unsupported Python version, the minimum required is {!r}", str(current_version)
+            if os.environ.get("PYEMPAQ_IGNORE_RESTRICTIONS"):
+                log(warning_msg)
+                log("Ommited because PYEMPAQ_IGNORE_RESTRICTIONS is set")
+            else:
+                raise ValueError(warning_msg)
+
     # create a temp dir and extract the project there
     timestamp = time.strftime("%Y%m%d%H%M%S", time.gmtime(pyempaq_filepath.stat().st_ctime))
     project_dir = pyempaq_dir / "{}-{}".format(metadata["project_name"], timestamp)
@@ -116,6 +129,8 @@ def run():
             log("Skipping virtualenv (no requirements)")
 
     python_exec = get_python_exec(project_dir)
+
+
     os.chdir(original_project_dir)
 
     cmd = build_command(str(python_exec), metadata, sys.argv[1:])

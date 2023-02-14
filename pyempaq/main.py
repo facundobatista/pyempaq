@@ -110,6 +110,7 @@ def pack(config):
         "requirement_files": [str(path) for path in config.requirements],
         "project_name": config.name,
         "exec_default_args": config.exec.default_args,
+        "unpack_restrictions": config.unpack_restrictions
     }
     if config.exec.script is not None:
         metadata["exec_style"] = "script"

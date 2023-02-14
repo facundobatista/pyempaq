@@ -57,6 +57,8 @@ def test_basic_cycle_full(tmp_path):
         basedir: {projectpath}
         exec:
           script: ep.py
+        unpack_restrictions:
+          minimum_python_version: "3.8"
     """))
 
     # pack it calling current pyempaq externally
