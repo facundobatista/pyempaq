@@ -224,7 +224,7 @@ def test_copyproject_no_link_permission(src, dest):
     src_file.write_text("test content")
     src_file.chmod(0o775)
 
-    with patch("pathlib.Path.hardlink_to", side_effect=PermissionError("No you don't.")):
+    with patch("os.link", side_effect=PermissionError("No you don't.")):
         copy_project(src, dest, *DEFAULT_INC_EXC)
 
     dest_file = dest / "foo"
@@ -240,7 +240,7 @@ def test_copyproject_cross_device(src, dest):
     src_file.chmod(0o775)
 
     os_error = OSError(errno.EXDEV, os.strerror(errno.EXDEV))
-    with patch("pathlib.Path.hardlink_to", side_effect=os_error):
+    with patch("os.link", side_effect=os_error):
         copy_project(src, dest, *DEFAULT_INC_EXC)
 
     dest_file = dest / "foo"
