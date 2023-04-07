@@ -78,7 +78,8 @@ def copy_project(src_dir: Path, dest_dir: Path, include: List[str], exclude: Lis
             else:
                 logger.error("Cannot find nodes for specified pattern: %r", pattern)
 
-        # get all excluded nodes, building the source path so it's comparable below
+        # get all excluded nodes, building the source path so it's
+        # easier comparable in the main loop below
         for pattern in exclude:
             excluded_nodes.update(src_dir / path for path in glob.iglob(pattern, recursive=True))
     finally:
