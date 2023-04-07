@@ -338,11 +338,13 @@ def test_copyproject_symlink_outside_directory(src, dest, tmp_path, logs):
     assert expected in logs.debug
 
 
-def test_copyproject_weird_filetype(src, dest, logs):
+def test_copyproject_weird_filetype(src, dest, logs, monkeypatch):
     """Ignore whatever is not a regular file, symlink or dir."""
-    socket_path = src / "test-socket"
+    # change into the source directory and just bind the socket there, otherwise
+    # its path will be too long for MacOS (because of the temp dir path used)
+    monkeypatch.chdir(src)
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    sock.bind(str(socket_path))
+    sock.bind("test-socket")
 
     copy_project(src, dest, *DEFAULT_INC_EXC)
 
