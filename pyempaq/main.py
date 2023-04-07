@@ -143,7 +143,9 @@ def copy_project(src_dir: Path, dest_dir: Path, include: List[str], exclude: Lis
 
         elif src_node.is_file():
             try:
-                dest_node.hardlink_to(src_node)
+                # XXX Facundo 2023-04-07: we can use simpler `dest_node.hardlink_to(src_node)`
+                # when we stop supporting < 3.10
+                os.link(src_node, dest_node)
             except OSError as error:
                 if error.errno != errno.EXDEV and not isinstance(error, PermissionError):
                     raise
