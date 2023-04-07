@@ -64,6 +64,7 @@ def copy_project(src_dir: Path, dest_dir: Path, include: List[str], exclude: Lis
     - other types (blocks, mount points, etc): ignored
     """
     included_nodes = ["."]  # always the root, to create the destination directory
+    excluded_nodes = set()
 
     # XXX Facundo 2023-04-07: this whole try/finally around changing directories can be
     # simplified to just pass `root_dir` to `glob.glob` when we stop supporting < 3.10
@@ -76,6 +77,10 @@ def copy_project(src_dir: Path, dest_dir: Path, include: List[str], exclude: Lis
                 included_nodes.extend(items)
             else:
                 logger.error("Cannot find nodes for specified pattern: %r", pattern)
+
+        # get all excluded nodes, building the source path so it's comparable below
+        for pattern in exclude:
+            excluded_nodes.update(src_dir / path for path in glob.iglob(pattern, recursive=True))
     finally:
         os.chdir(_original_dir)
 
@@ -109,14 +114,6 @@ def copy_project(src_dir: Path, dest_dir: Path, include: List[str], exclude: Lis
         _temp_included.extend(_relative(n) for n in reversed(missing_parents))
         _temp_included.append(_relative(node))
     included_nodes = _temp_included
-
-    # get all excluded nodes, building the source path so it's comparable below
-    excluded_nodes = set()
-    for pattern in exclude:
-        excluded_nodes.update(
-            src_dir / path
-            for path in glob.iglob(pattern, root_dir=src_dir, recursive=True)
-        )
 
     for node in included_nodes:
         src_node = src_dir / node
