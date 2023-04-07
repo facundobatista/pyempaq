@@ -348,3 +348,36 @@ def test_copyproject_weird_filetype(src, dest, logs):
 
     assert not (dest / "test-socket").exists()
     assert "Ignoring file because of type: 'test-socket'" in logs.debug
+
+
+def test_copyproject_specific_file_inside_directory_existing(src, dest):
+    """Include an existing specific file inside a dir."""
+    basedir = src / "base"
+    basedir.mkdir()
+    thefile = basedir / "foo"
+    thefile.touch()
+
+    copy_project(src, dest, ["base/foo"], [])
+
+    destbase = dest / "base"
+    assert destbase.exists()
+    destfile = destbase / "foo"
+    assert destfile.exists()
+    assert destfile.is_file()
+
+
+def test_copyproject_specific_file_inside_directory_missing(src, dest, logs):
+    """Include a missing specific file inside a dir."""
+    copy_project(src, dest, ["missingdir/missingfile"], [])
+    assert "Cannot find nodes for specified pattern: 'missingdir/missingfile'" in logs.error
+
+
+def test_copyproject_specific_file_inside_directory_ignored(src, dest, logs):
+    """Include an existing specific file inside an ignored dir."""
+    basedir = src / "base"
+    basedir.mkdir()
+    thefile = basedir / "foo"
+    thefile.touch()
+
+    copy_project(src, dest, ["base/foo"], ["base"])
+    assert "Ignoring excluded node: 'base'" in logs.debug

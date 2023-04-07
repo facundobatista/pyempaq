@@ -65,7 +65,11 @@ def copy_project(src_dir: Path, dest_dir: Path, include: List[str], exclude: Lis
     """
     included_nodes = ["."]  # always the root, to create the destination directory
     for pattern in include:
-        included_nodes.extend(glob.iglob(pattern, root_dir=src_dir, recursive=True))
+        items = glob.glob(pattern, root_dir=src_dir, recursive=True)
+        if items:
+            included_nodes.extend(items)
+        else:
+            logger.error("Cannot find nodes for specified pattern: %r", pattern)
 
     # need to remove all content inside symlinked directories (as that symlink will
     # be reproduced, so those contents don't need to be particularly handled)
@@ -79,6 +83,28 @@ def copy_project(src_dir: Path, dest_dir: Path, include: List[str], exclude: Lis
         if not any(parent in symlinked_dirs for parent in (src_dir / node).parents)
     ]
 
+    def _relative(node):
+        """Return str'ed node relative to src_dir, ready to log."""
+        return str(node.relative_to(src_dir))
+
+    # ensure all parents of included nodes are also present
+    _temp_included = []
+    _src_parents = list(src_dir.parents)
+    for node in included_nodes:
+        if node == ".":
+            _temp_included.append(".")
+            continue
+        missing_parents = []
+        node = src_dir / node
+        for parent in node.parents:
+            if parent in _src_parents:
+                break
+            if parent not in included_nodes:
+                missing_parents.append(parent)
+        _temp_included.extend(_relative(n) for n in reversed(missing_parents))
+        _temp_included.append(_relative(node))
+    included_nodes = _temp_included
+
     # get all excluded nodes, building the source path so it's comparable below
     excluded_nodes = set()
     for pattern in exclude:
@@ -86,10 +112,6 @@ def copy_project(src_dir: Path, dest_dir: Path, include: List[str], exclude: Lis
             src_dir / path
             for path in glob.iglob(pattern, root_dir=src_dir, recursive=True)
         )
-
-    def _relative(node):
-        """Return str'ed node relative to src_dir, ready to log."""
-        return str(node.relative_to(src_dir))
 
     for node in included_nodes:
         src_node = src_dir / node
