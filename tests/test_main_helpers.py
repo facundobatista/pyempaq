@@ -12,6 +12,7 @@ import sys
 from unittest.mock import patch
 
 import pytest
+from logassert import Exact
 
 from pyempaq.main import get_pip, copy_project
 from pyempaq.common import ExecutionError
@@ -159,7 +160,8 @@ def test_copyproject_ignore_excluded_parent(src, dest, logs):
     assert (dest / "bar_dir").exists()
     assert (dest / "bar_dir" / "bar_file").exists()
     assert "Ignoring excluded node: 'foo_dir'" in logs.debug
-    assert "Ignoring node because excluded parent: 'foo_dir/foo_file'" in logs.debug
+    excluded = os.path.join("foo_dir", "foo_file")
+    assert Exact(f"Ignoring node because excluded parent: {excluded!r}") in logs.debug
 
 
 def test_copyproject_include_nothing(src, dest):
@@ -303,7 +305,7 @@ def test_copyproject_symlink_deep(src, dest):
     assert dest_symlink.is_symlink()
     assert dest_symlink.resolve() == dest / "dir1" / "real_file"
     real_link = os.readlink(dest_symlink)
-    assert real_link == "../dir1/real_file"
+    assert real_link == os.path.join("..", "dir1", "real_file")
 
 
 def test_copyproject_symlink_outside_file(src, dest, tmp_path, logs):
@@ -320,7 +322,7 @@ def test_copyproject_symlink_outside_file(src, dest, tmp_path, logs):
 
     assert not (dest / "foo").exists()
     expected = f"Ignoring symlink because targets outside the project: 'foo' -> {str(out_file)!r}"
-    assert expected in logs.debug
+    assert Exact(expected) in logs.debug
 
 
 def test_copyproject_symlink_outside_directory(src, dest, tmp_path, logs):
@@ -335,9 +337,10 @@ def test_copyproject_symlink_outside_directory(src, dest, tmp_path, logs):
 
     assert not (dest / "foo").exists()
     expected = f"Ignoring symlink because targets outside the project: 'foo' -> {str(out_dir)!r}"
-    assert expected in logs.debug
+    assert Exact(expected) in logs.debug
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Unix sockets are not possible in Windows")
 def test_copyproject_weird_filetype(src, dest, logs, monkeypatch):
     """Ignore whatever is not a regular file, symlink or dir."""
     # change into the source directory and just bind the socket there, otherwise

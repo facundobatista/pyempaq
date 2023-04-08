@@ -136,7 +136,8 @@ def copy_project(src_dir: Path, dest_dir: Path, include: List[str], exclude: Lis
                 )
                 continue
             relative_link = os.path.relpath(real_pointed_node, src_node.parent)
-            dest_node.symlink_to(relative_link)
+            target_is_dir = real_pointed_node.is_dir()  # needed for Windows
+            dest_node.symlink_to(relative_link, target_is_directory=target_is_dir)
 
         elif src_node.is_dir():
             dest_node.mkdir(mode=src_node.stat().st_mode, exist_ok=True)
