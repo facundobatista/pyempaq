@@ -385,4 +385,5 @@ def test_copyproject_specific_file_inside_directory_ignored(src, dest, logs):
     thefile.touch()
 
     copy_project(src, dest, ["base/foo"], ["base"])
-    assert "Ignoring excluded node: 'base'" in logs.debug
+    excluded = os.path.join("base", "foo")
+    assert Exact(f"Ignoring node because excluded parent: {excluded!r}") in logs.debug

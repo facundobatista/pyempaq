@@ -63,7 +63,8 @@ def copy_project(src_dir: Path, dest_dir: Path, include: List[str], exclude: Lis
     - symlinks: respected, validating that they don't link to outside
     - other types (blocks, mount points, etc): ignored
     """
-    included_nodes = ["."]  # always the root, to create the destination directory
+    included_nodes = {}  # use a dict because we want to avoid duplicates, but we care about order
+    included_nodes["."] = None  # always the root, to create the destination directory
     excluded_nodes = set()
 
     # XXX Facundo 2023-04-07: this whole try/finally around changing directories can be
@@ -74,7 +75,7 @@ def copy_project(src_dir: Path, dest_dir: Path, include: List[str], exclude: Lis
         for pattern in include:
             items = glob.glob(pattern, recursive=True)
             if items:
-                included_nodes.extend(items)
+                included_nodes.update(dict.fromkeys(items))
             else:
                 logger.error("Cannot find nodes for specified pattern: %r", pattern)
 
@@ -92,29 +93,10 @@ def copy_project(src_dir: Path, dest_dir: Path, include: List[str], exclude: Lis
         node = src_dir / node
         if node.is_dir() and node.is_symlink():
             symlinked_dirs.add(node)
-    included_nodes = [
-        node for node in included_nodes
-        if not any(parent in symlinked_dirs for parent in (src_dir / node).parents)
-    ]
 
     def _relative(node):
         """Return str'ed node relative to src_dir, ready to log."""
         return str(node.relative_to(src_dir))
-
-    # ensure all parents of included nodes are also present
-    _temp_included = []
-    _src_parents = list(src_dir.parents)
-    for node in included_nodes:
-        missing_parents = []
-        node = src_dir / node
-        for parent in node.parents:
-            if parent in _src_parents:
-                break
-            if parent not in included_nodes:
-                missing_parents.append(parent)
-        _temp_included.extend(_relative(n) for n in reversed(missing_parents))
-        _temp_included.append(_relative(node))
-    included_nodes = _temp_included
 
     for node in included_nodes:
         src_node = src_dir / node
@@ -126,6 +108,13 @@ def copy_project(src_dir: Path, dest_dir: Path, include: List[str], exclude: Lis
         if any(parent in excluded_nodes for parent in src_node.parents):
             logger.debug("Ignoring node because excluded parent: %r", _relative(src_node))
             continue
+        if any(parent in symlinked_dirs for parent in src_node.parents):
+            # node is inside a symlinked path, no need to duplicate it
+            continue
+
+        # if included node is only part of subtree, ensure parent directories are there
+        if not dest_node.parent.exists():
+            dest_node.parent.mkdir(parents=True)
 
         if src_node.is_symlink():
             real_pointed_node = src_node.resolve()
