@@ -103,7 +103,17 @@ class Executor(ModelConfigDefaults, alias_generator=lambda s: s.replace("_", "-"
     default_args: List[pydantic.StrictStr] = []
 
 
-class Config(ModelConfigDefaults, validate_all=False):
+class UnpackRestrictions(ModelConfigDefaults, alias_generator=lambda s: s.replace("_", "-")):
+    """Restrictions that will be verified/enforced during unpack."""
+
+    minimum_python_version: pydantic.StrictStr = None
+
+
+class Config(
+    ModelConfigDefaults,
+    validate_all=False,
+    alias_generator=lambda s: s.replace("_", "-"),
+):
     """Definition of PyEmpaq's configuration."""
 
     name: str

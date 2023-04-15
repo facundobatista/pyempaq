@@ -16,7 +16,7 @@ from logassert import Exact
 
 from pyempaq.main import get_pip, copy_project, prepare_metadata
 from pyempaq.common import ExecutionError
-from pyempaq.config_manager import DEFAULT_INCLUDE_LIST
+from pyempaq.config_manager import DEFAULT_INCLUDE_LIST, load_config
 
 
 # -- tests for get pip
@@ -387,7 +387,6 @@ def test_copyproject_specific_file_inside_directory_ignored(src, dest, logs):
     copy_project(src, dest, ["base/foo"], ["base"])
     excluded = os.path.join("base", "foo")
     assert Exact(f"Ignoring node because excluded parent: {excluded!r}") in logs.debug
-
 
 
 # -- tests for metadata generation

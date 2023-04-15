@@ -177,6 +177,8 @@ PyEmpaq sources come with a small example project if you want to play a little p
 
 - a `ep.py` file which is the project's entrypoint; all it does is to inform it started, import the internal module, access the media files, and use the declared dependency, reporting every step.
 
+- a `secrets.txt` file that must not be included in the packed file.
+
 This explores most of the needs of any project. You can try this example, and surely after you will be ready to actually pack any other project you want.
 
 So, let's pack the example source project. As you're working with the PyEmpaq project itself (as you're packing its example), you don't really need to have it installed yet. In that case, if you have `fades` installed is super easy:

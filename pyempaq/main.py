@@ -10,6 +10,7 @@ import glob
 import json
 import logging
 import os
+import pathlib
 import shutil
 import tempfile
 import uuid
@@ -21,7 +22,7 @@ from typing import List
 
 from pyempaq import __version__
 from pyempaq.common import find_venv_bin, logged_exec, ExecutionError
-from pyempaq.config_manager import load_config, ConfigError
+from pyempaq.config_manager import load_config, ConfigError, Config
 
 
 # setup logging
