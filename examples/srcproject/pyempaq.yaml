@@ -3,3 +3,5 @@ exec:
   script: ep.py
 dependencies:
   - requests
+exclude:
+  - secrets.txt

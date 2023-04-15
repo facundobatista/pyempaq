@@ -55,7 +55,7 @@ The **packing phase** is executed by the project developer, only once, before di
 
 In this packing phase, PyEmpaq builds the indicated packed file, putting inside:
 
-- the payload project, with all the indicated modules and binary files (currently *everything from the project*, but this will be improved in the future)
+- the payload project, with all the indicated modules and binary files
 
 - an *unpacker* script from PyEmpaq, which will be run during the execution phase
 
@@ -111,7 +111,7 @@ The following is the structure of the `pyempaq.yaml` configuration file:
 
 - `name` [mandatory]: the name of the project.
 
-- `basedir` [optional, defaults to where the configuration file is located]: the project's base directory.
+- `basedir` [optional]: the project's base directory; if not included it defaults to where the configuration file is located.
 
 - `exec` [mandatory]: the section where is defined the information to execute the project once unpacked; it holds different subkeys (some subkeys are marked with †: ONE of those keys must be present, but only ONE):
 
@@ -127,11 +127,17 @@ The following is the structure of the `pyempaq.yaml` configuration file:
 
 - `dependencies` [optional]: a list of strings to directly specify packages to be installed by `pip` without needing to have a requirement file.
 
+- `include` [optional]: a list of strings, each one specifying a pattern to decide what files and directories to include in the pack (see below); if not included it defaults to `["./**"]` which means all the files and directories in the project.
+
+- `exclude` [optional]: a list of strings, each one specifying a pattern to decide what files and directories to exclude from the pack (see below).
+
 - `unpack-restrictions` [optional]: a section to specify different restrictions to be verified/enforced during unpack.
 
     - `minimum-python-version` [optional]: a string specifying the minimum version possible to run correctly.
 
 All specified filepaths must exist inside the project and must be relative (to the project's base directory), with the exception of `basedir` itself which can be absolute or relative (to the configuration file location).
+
+Both `include` and `exclude` options use pattern matching according to the rules used by the Unix shell, using `*`, `?`, and character ranges expressed with `[]`. Also `**` will match any files and zero or more directories. For more information or subtleties check the [`glob.glob`](https://docs.python.org/dev/library/glob.html#glob.glob) documentation.
 
 Note that the final user may ignore/bypass any unpack restrictions using the `PYEMPAQ_IGNORE_RESTRICTIONS` environment variable with a value of comma-separated names of which restrictions to ignore.
 

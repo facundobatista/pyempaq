@@ -1,4 +1,4 @@
-# Copyright 2021-2023 Facundo Batista
+# Copyright 2021 Facundo Batista
 # Licensed under the GPL v3 License
 # For further info, check https://github.com/facundobatista/pyempaq
 
@@ -16,6 +16,9 @@ _BASEDIR = None
 
 # directory where the config is taken from, which is the default for basedir
 _CONFIGDIR = None
+
+# the default include value to get all the project inside
+DEFAULT_INCLUDE_LIST = ["./**"]
 
 
 class ConfigError(Exception):
@@ -100,17 +103,7 @@ class Executor(ModelConfigDefaults, alias_generator=lambda s: s.replace("_", "-"
     default_args: List[pydantic.StrictStr] = []
 
 
-class UnpackRestrictions(ModelConfigDefaults, alias_generator=lambda s: s.replace("_", "-")):
-    """Restrictions that will be verified/enforced during unpack."""
-
-    minimum_python_version: pydantic.StrictStr = None
-
-
-class Config(
-    ModelConfigDefaults,
-    validate_all=False,
-    alias_generator=lambda s: s.replace("_", "-"),
-):
+class Config(ModelConfigDefaults, validate_all=False):
     """Definition of PyEmpaq's configuration."""
 
     name: str
@@ -118,6 +111,8 @@ class Config(
     exec: Executor
     requirements: List[RelativeFile] = []
     dependencies: List[str] = []
+    include: List[str] = DEFAULT_INCLUDE_LIST
+    exclude: List[str] = []
     unpack_restrictions: UnpackRestrictions = None
 
     @pydantic.validator("basedir")
