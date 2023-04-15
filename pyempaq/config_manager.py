@@ -17,6 +17,9 @@ _BASEDIR = None
 # directory where the config is taken from, which is the default for basedir
 _CONFIGDIR = None
 
+# the default include value to get all the project inside
+DEFAULT_INCLUDE_LIST = ["./**"]
+
 
 class ConfigError(Exception):
     """Specific errors found in the config."""
@@ -108,6 +111,8 @@ class Config(ModelConfigDefaults, validate_all=False):
     exec: Executor
     requirements: List[RelativeFile] = []
     dependencies: List[str] = []
+    include: List[str] = DEFAULT_INCLUDE_LIST
+    exclude: List[str] = []
 
     @pydantic.validator("basedir")
     def ensure_basedir(cls, value):
