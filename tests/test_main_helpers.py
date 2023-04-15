@@ -10,8 +10,9 @@ from unittest.mock import patch
 
 import pytest
 
-from pyempaq.main import get_pip
+from pyempaq.main import get_pip, prepare_metadata
 from pyempaq.common import ExecutionError
+from pyempaq.config_manager import load_config
 
 
 @pytest.mark.parametrize("version", [
@@ -37,3 +38,145 @@ def test_get_pip_failing_pip(tmp_path):
     # from inside a venv
     assert (
         useful_pip == tmp_path / "bin" / "pip3" or useful_pip == tmp_path / "Scripts" / "pip3.exe")
+
+
+# -- tests for metadata generation
+
+
+def test_metadata_base_exec_script(tmp_path):
+    """Simple basic metadata for exec script."""
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text("""
+        name: testproject
+        exec:
+            script: script.py
+    """)
+    (tmp_path / "script.py").touch()
+    config = load_config(config_file)
+
+    metadata = prepare_metadata(tmp_path, config)
+    assert metadata == {
+        "requirement_files": [],
+        "project_name": "testproject",
+        "exec_default_args": [],
+        "exec_style": "script",
+        "exec_value": "script.py",
+        "unpack_restrictions": {},
+    }
+
+
+def test_metadata_base_exec_module(tmp_path):
+    """Simple basic metadata for exec module."""
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text("""
+        name: testproject
+        exec:
+            module: foobar
+    """)
+    (tmp_path / "foobar").mkdir()
+    config = load_config(config_file)
+
+    metadata = prepare_metadata(tmp_path, config)
+    assert metadata == {
+        "requirement_files": [],
+        "project_name": "testproject",
+        "exec_default_args": [],
+        "exec_style": "module",
+        "exec_value": "foobar",
+        "unpack_restrictions": {},
+    }
+
+
+def test_metadata_base_exec_entrypoint(tmp_path):
+    """Simple basic metadata for exec entrypoint."""
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text("""
+        name: testproject
+        exec:
+            entrypoint: [foo, bar]
+    """)
+    config = load_config(config_file)
+
+    metadata = prepare_metadata(tmp_path, config)
+    assert metadata == {
+        "requirement_files": [],
+        "project_name": "testproject",
+        "exec_default_args": [],
+        "exec_style": "entrypoint",
+        "exec_value": "['foo', 'bar']",
+        "unpack_restrictions": {},
+    }
+
+
+def test_metadata_requirements(tmp_path):
+    """Metadata with requirement files."""
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text("""
+        name: testproject
+        exec:
+            entrypoint: [foo, bar]
+        requirements:
+            - reqs1.txt
+            - reqs2.txt
+    """)
+    (tmp_path / "reqs1.txt").touch()
+    (tmp_path / "reqs2.txt").touch()
+    config = load_config(config_file)
+
+    metadata = prepare_metadata(tmp_path, config)
+    assert metadata["requirement_files"] == ["reqs1.txt", "reqs2.txt"]
+
+
+def test_metadata_dependencies(tmp_path):
+    """Metadata with extra dependencies."""
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text("""
+        name: testproject
+        exec:
+            entrypoint: [foo, bar]
+        dependencies:
+            - abc
+            - def < 5.2
+    """)
+    config = load_config(config_file)
+
+    metadata = prepare_metadata(tmp_path, config)
+    (extra_req,) = metadata["requirement_files"]
+    assert (tmp_path / extra_req).read_text() == "abc\ndef < 5.2\n"
+
+
+def test_metadata_requirements_and_dependencies(tmp_path):
+    """Metadata with both requirement files and dependencies."""
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text("""
+        name: testproject
+        exec:
+            entrypoint: [foo, bar]
+        requirements:
+            - reqs.txt
+        dependencies:
+            - extradep == 2.0
+    """)
+    (tmp_path / "reqs.txt").touch()
+    config = load_config(config_file)
+
+    metadata = prepare_metadata(tmp_path, config)
+    user_req, extra_req = metadata["requirement_files"]
+    assert user_req == "reqs.txt"
+    assert (tmp_path / extra_req).read_text() == "extradep == 2.0\n"
+
+
+def test_metadata_unpack_restrictions(tmp_path):
+    """Metadata with unpack restrictions."""
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text("""
+        name: testproject
+        exec:
+            entrypoint: [foo, bar]
+        unpack-restrictions:
+            minimum-python-version: "3.9"
+    """)
+    config = load_config(config_file)
+
+    metadata = prepare_metadata(tmp_path, config)
+    assert metadata["unpack_restrictions"]["minimum_python_version"] == "3.9"

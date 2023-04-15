@@ -17,7 +17,7 @@ from collections import namedtuple
 
 from pyempaq import __version__
 from pyempaq.common import find_venv_bin, logged_exec, ExecutionError
-from pyempaq.config_manager import load_config, ConfigError
+from pyempaq.config_manager import load_config, ConfigError, Config
 
 
 # setup logging
@@ -46,6 +46,42 @@ def get_pip():
     venv.create(tmpdir, with_pip=True)
     useful_pip = find_venv_bin(tmpdir, "pip3")
     return useful_pip
+
+
+def prepare_metadata(origdir: pathlib.Path, config: Config):
+    """Prepare the meta-data for the future unpacker action.
+
+    Note that all paths in the config are all already validated to exist
+    and relative to the base directory (so no "place adaptation" needs
+    to happen for the unpacking).
+    """
+    # store the needed metadata
+    logger.debug("Saving metadata from config %s", config)
+    metadata = {
+        "requirement_files": [str(path) for path in config.requirements],
+        "project_name": config.name,
+        "exec_default_args": config.exec.default_args,
+        "unpack_restrictions": dict(config.unpack_restrictions or {}),
+    }
+    if config.exec.script is not None:
+        metadata["exec_style"] = "script"
+        metadata["exec_value"] = str(config.exec.script)
+    elif config.exec.module is not None:
+        metadata["exec_style"] = "module"
+        metadata["exec_value"] = str(config.exec.module)
+    elif config.exec.entrypoint is not None:
+        metadata["exec_style"] = "entrypoint"
+        metadata["exec_value"] = str(config.exec.entrypoint)
+
+    # if dependencies, store them just as another requirement file (save it inside the project,
+    # but using an unique name to not overwrite anything)
+    if config.dependencies:
+        unique_name = f"pyempaq-autoreq-{uuid.uuid4()}.txt"
+        extra_deps = origdir / unique_name
+        extra_deps.write_text("\n".join(config.dependencies) + "\n")
+        metadata["requirement_files"].append(unique_name)
+
+    return metadata
 
 
 def pack(config):
@@ -77,31 +113,7 @@ def pack(config):
     cmd = [pip, "install", "appdirs", f"--target={venv_dir}"]
     logged_exec(cmd)
 
-    # store the needed metadata
-    logger.debug("Saving metadata from config %s", config)
-    metadata = {
-        "requirement_files": [str(path) for path in config.requirements],
-        "project_name": config.name,
-        "exec_default_args": config.exec.default_args,
-    }
-    if config.exec.script is not None:
-        metadata["exec_style"] = "script"
-        metadata["exec_value"] = str(config.exec.script)
-    elif config.exec.module is not None:
-        metadata["exec_style"] = "module"
-        metadata["exec_value"] = str(config.exec.module)
-    elif config.exec.entrypoint is not None:
-        metadata["exec_style"] = "entrypoint"
-        metadata["exec_value"] = str(config.exec.entrypoint)
-
-    # if dependencies, store them just as another requirement file (save it inside the project,
-    # but using an unique name to not overwrite anything)
-    if config.dependencies:
-        unique_name = f"pyempaq-autoreq-{uuid.uuid4()}.txt"
-        extra_deps = origdir / unique_name
-        extra_deps.write_text("\n".join(config.dependencies))
-        metadata["requirement_files"].append(unique_name)
-
+    metadata = prepare_metadata(origdir, config)
     metadata_file = tmpdir / "metadata.json"
     with metadata_file.open("wt", encoding="utf8") as fh:
         json.dump(metadata, fh)

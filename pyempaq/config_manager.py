@@ -1,4 +1,4 @@
-# Copyright 2021 Facundo Batista
+# Copyright 2021-2023 Facundo Batista
 # Licensed under the GPL v3 License
 # For further info, check https://github.com/facundobatista/pyempaq
 
@@ -100,7 +100,17 @@ class Executor(ModelConfigDefaults, alias_generator=lambda s: s.replace("_", "-"
     default_args: List[pydantic.StrictStr] = []
 
 
-class Config(ModelConfigDefaults, validate_all=False):
+class UnpackRestrictions(ModelConfigDefaults, alias_generator=lambda s: s.replace("_", "-")):
+    """Restrictions that will be verified/enforced during unpack."""
+
+    minimum_python_version: pydantic.StrictStr = None
+
+
+class Config(
+    ModelConfigDefaults,
+    validate_all=False,
+    alias_generator=lambda s: s.replace("_", "-"),
+):
     """Definition of PyEmpaq's configuration."""
 
     name: str
@@ -108,6 +118,7 @@ class Config(ModelConfigDefaults, validate_all=False):
     exec: Executor
     requirements: List[RelativeFile] = []
     dependencies: List[str] = []
+    unpack_restrictions: UnpackRestrictions = None
 
     @pydantic.validator("basedir")
     def ensure_basedir(cls, value):

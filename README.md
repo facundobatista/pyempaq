@@ -123,11 +123,17 @@ The following is the structure of the `pyempaq.yaml` configuration file:
 
     - `default-args` [optional]: the default arguments to be passed to the script/module/entrypoint (if not overriden when the distributed `.pyz` is executed).
 
-- `requirements`: a list of filepaths pointing to the requirement files with pip-installable dependencies.
+- `requirements` [optional]: a list of filepaths pointing to the requirement files with pip-installable dependencies.
 
-- `dependencies`: a list of strings to directly specify packages to be installed by `pip` without needing to have a requirement file.
+- `dependencies` [optional]: a list of strings to directly specify packages to be installed by `pip` without needing to have a requirement file.
+
+- `unpack-restrictions` [optional]: a section to specify different restrictions to be verified/enforced during unpack.
+
+    - `minimum-python-version` [optional]: a string specifying the minimum version possible to run correctly.
 
 All specified filepaths must exist inside the project and must be relative (to the project's base directory), with the exception of `basedir` itself which can be absolute or relative (to the configuration file location).
+
+Note that the final user may ignore/bypass any unpack restrictions using the `PYEMPAQ_IGNORE_RESTRICTIONS` environment variable with a value of comma-separated names of which restrictions to ignore.
 
 The following are examples of different configuration files (which were the ones used to build the packed examples mentioned before):
 
