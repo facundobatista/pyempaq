@@ -89,3 +89,50 @@ def test_basic_cycle_full(tmp_path):
     # XXX Facundo 2021-08-01: this check is disabled until we discover why venv.create
     # not working in GA
     # assert "virtualenv module ok" in output_lines
+
+
+def test_pyz_location(tmp_path):
+    """Check that the environment variable for the .pyz location is set."""
+    # set up a basic test project, with an entrypoint that shows access to internals
+    projectpath = tmp_path / "fakeproject"
+    entrypoint = projectpath / "ep.py"
+    entrypoint.parent.mkdir()
+    entrypoint.write_text(textwrap.dedent("""
+        import os
+
+        print(os.environ.get("PYEMPAQ_PYZ_PATH"))
+    """))
+
+    # write the proper config
+    config = tmp_path / "pyempaq.yaml"
+    config.write_text(textwrap.dedent(f"""
+        name: testproject
+        basedir: {projectpath}
+        exec:
+          script: ep.py
+    """))
+
+    # pack it calling current pyempaq externally
+    env = dict(os.environ)  # need to replicate original env because of Windows
+    env["PYTHONPATH"] = os.getcwd()
+    cmd = [sys.executable, "-m", "pyempaq", str(config)]
+    os.chdir(projectpath)
+    subprocess.run(cmd, check=True, env=env)
+    packed_filepath = projectpath / "testproject.pyz"
+    assert packed_filepath.exists()
+
+    # run the packed file in a clean directory
+    cleandir = tmp_path / "cleandir"
+    cleandir.mkdir()
+    packed_filepath.rename(cleandir / "renamed.pyz")
+    os.chdir(cleandir)
+    cmd = [sys.executable, "renamed.pyz"]
+    proc = subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    output_lines = [line for line in proc.stdout.split("\n") if line]
+    assert proc.returncode == 0, "\n".join(output_lines)
+
+    # verify output
+    (exposed_pyz_path,) = output_lines
+    assert exposed_pyz_path == str(cleandir / "renamed.pyz")

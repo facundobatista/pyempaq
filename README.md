@@ -150,6 +150,15 @@ The following are examples of different configuration files (which were the ones
 - [the full desktop app](https://github.com/facundobatista/pyempaq/blob/main/examples/pyempaq-desktop-app.yaml?raw=True)
 
 
+## Context of the project being run
+
+When the packed script/module/whatever is run in the unpacking phase, it will be executed inside the virtualenv with the needed requirements/dependencies (freshly created and installed or reused from a previous run).
+
+Also, the following environment variable will be set:
+
+- `PYEMPAQ_PYZ_PATH`: the absolute path to the `.pyz` run by the user
+
+
 ## How to install PyEmpaq
 
 Directly from PyPI:
