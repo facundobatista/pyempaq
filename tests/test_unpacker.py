@@ -4,6 +4,7 @@
 
 """Unpacker tests."""
 
+import os
 import platform
 import zipfile
 from pathlib import Path
@@ -12,6 +13,7 @@ from unittest.mock import patch
 import pytest
 from logassert import Exact, NOTHING
 
+import pyempaq.unpacker
 from pyempaq.unpacker import (
     PROJECT_VENV_DIR,
     build_command,
@@ -121,7 +123,7 @@ def test_runcommand_pyz_path():
 
     (call1,) = run_mock.call_args_list
     passed_env = call1[1]["env"]
-    assert passed_env["PYEMPAQ_PYZ_PATH"] == str(Path("./pyempaq").absolute())
+    assert passed_env["PYEMPAQ_PYZ_PATH"] == os.path.dirname(pyempaq.unpacker.__file__)
 
 
 # --- tests for the project directory setup

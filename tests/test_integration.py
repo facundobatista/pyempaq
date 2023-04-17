@@ -62,11 +62,14 @@ def test_basic_cycle_full(tmp_path):
     # pack it calling current pyempaq externally
     env = dict(os.environ)  # need to replicate original env because of Windows
     env["PYTHONPATH"] = os.getcwd()
+    print("============ se ok!", sys.executable)
     cmd = [sys.executable, "-m", "pyempaq", str(config)]
     os.chdir(projectpath)
     subprocess.run(cmd, check=True, env=env)
     packed_filepath = projectpath / "testproject.pyz"
     assert packed_filepath.exists()
+    print("=============== anduvo")
+    pumba
 
     # run the packed file in a clean directory
     cleandir = tmp_path / "cleandir"
@@ -115,11 +118,13 @@ def test_pyz_location(tmp_path):
     # pack it calling current pyempaq externally
     env = dict(os.environ)  # need to replicate original env because of Windows
     env["PYTHONPATH"] = os.getcwd()
+    print("============ se mal", sys.executable)
     cmd = [sys.executable, "-m", "pyempaq", str(config)]
     os.chdir(projectpath)
     subprocess.run(cmd, check=True, env=env)
     packed_filepath = projectpath / "testproject.pyz"
     assert packed_filepath.exists()
+    print("=============== wtf")
 
     # run the packed file in a clean directory
     cleandir = tmp_path / "cleandir"
