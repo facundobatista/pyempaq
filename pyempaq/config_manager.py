@@ -103,7 +103,17 @@ class Executor(ModelConfigDefaults, alias_generator=lambda s: s.replace("_", "-"
     default_args: List[pydantic.StrictStr] = []
 
 
-class Config(ModelConfigDefaults, validate_all=False):
+class UnpackRestrictions(ModelConfigDefaults, alias_generator=lambda s: s.replace("_", "-")):
+    """Restrictions that will be verified/enforced during unpack."""
+
+    minimum_python_version: pydantic.StrictStr = None
+
+
+class Config(
+    ModelConfigDefaults,
+    validate_all=False,
+    alias_generator=lambda s: s.replace("_", "-"),
+):
     """Definition of PyEmpaq's configuration."""
 
     name: str
@@ -113,6 +123,7 @@ class Config(ModelConfigDefaults, validate_all=False):
     dependencies: List[str] = []
     include: List[str] = DEFAULT_INCLUDE_LIST
     exclude: List[str] = []
+    unpack_restrictions: UnpackRestrictions = None
 
     @pydantic.validator("basedir")
     def ensure_basedir(cls, value):

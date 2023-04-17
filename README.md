@@ -131,9 +131,15 @@ The following is the structure of the `pyempaq.yaml` configuration file:
 
 - `exclude` [optional]: a list of strings, each one specifying a pattern to decide what files and directories to exclude from the pack (see below).
 
+- `unpack-restrictions` [optional]: a section to specify different restrictions to be verified/enforced during unpack.
+
+    - `minimum-python-version` [optional]: a string specifying the minimum version possible to run correctly.
+
 All specified filepaths must exist inside the project and must be relative (to the project's base directory), with the exception of `basedir` itself which can be absolute or relative (to the configuration file location).
 
 Both `include` and `exclude` options use pattern matching according to the rules used by the Unix shell, using `*`, `?`, and character ranges expressed with `[]`. Also `**` will match any files and zero or more directories. For more information or subtleties check the [`glob.glob`](https://docs.python.org/dev/library/glob.html#glob.glob) documentation.
+
+Note that the final user may ignore/bypass any unpack restrictions using the `PYEMPAQ_IGNORE_RESTRICTIONS` environment variable with a value of comma-separated names of which restrictions to ignore.
 
 The following are examples of different configuration files (which were the ones used to build the packed examples mentioned before):
 

@@ -1,4 +1,4 @@
-# Copyright 2021 Facundo Batista
+# Copyright 2021-2023 Facundo Batista
 # Licensed under the GPL v3 License
 # For further info, check https://github.com/facundobatista/pyempaq
 
@@ -8,13 +8,16 @@ import json
 import logging
 import os
 import pathlib
+import platform
 import shutil
 import subprocess
 import sys
 import time
 import venv
 import zipfile
-from typing import List, Dict
+from typing import List, Dict, Any
+
+from packaging import version
 
 from pyempaq.common import find_venv_bin, logged_exec
 
@@ -131,6 +134,27 @@ def setup_project_directory(
     (project_dir / COMPLETE_FLAG_FILE).touch()
 
 
+def restrictions_ok(restrictions: Dict[str, Any]) -> bool:
+    """Enforce the unpacking restrictions, if any; return True if all ok to continue."""
+    if not restrictions:
+        return True
+    ignored_restrictions = os.environ.get("PYEMPAQ_IGNORE_RESTRICTIONS", "").split(",")
+
+    mpv = restrictions.get("minimum_python_version")
+    if mpv is not None:
+        current = platform.python_version()
+        log("Checking minimum Python version: indicated=%r current=%r", mpv, current)
+        if version.parse(mpv) > version.parse(current):
+            msg = "Failed to comply with version restriction: need at least Python %s"
+            if "minimum-python-version" in ignored_restrictions:
+                logger.info("(ignored) " + msg, mpv)
+            else:
+                logger.error(msg, mpv)
+                return False
+
+    return True
+
+
 def run():
     """Run the unpacker."""
     log("Pyempaq start")
@@ -140,6 +164,8 @@ def run():
     zf = zipfile.ZipFile(pyempaq_filepath)
     metadata = json.loads(zf.read("metadata.json").decode("utf8"))
     log("Loaded metadata: %s", metadata)
+    if not restrictions_ok(metadata["unpack_restrictions"]):
+        exit(1)
 
     # load appdirs from the builtin venv
     sys.path.insert(0, f"{pyempaq_filepath}/venv/")

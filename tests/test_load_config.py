@@ -1,4 +1,4 @@
-# Copyright 2021 Facundo Batista
+# Copyright 2021-2023 Facundo Batista
 # Licensed under the GPL v3 License
 # For further info, check https://github.com/facundobatista/pyempaq
 
@@ -589,4 +589,54 @@ def test_error_formatter_multiple_results(tmp_path):
     assert errors == [
         "- 'name': field required",
         "- 'exec.script': file must exist",
+    ]
+
+
+# -- tests for unpacker restrictions
+
+def test_unpacker_extra_fields(tmp_path):
+    """Config with a minimum Python version indicated, all ok."""
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text("""
+        name: testproject
+        exec:
+            entrypoint: ["foo", "bar"]
+        unpack-restrictions:
+            whatever: 42
+    """)
+    with pytest.raises(ConfigError) as cm:
+        load_config(config_file)
+    assert cm.value.errors == [
+        "- 'unpack-restrictions.whatever': extra fields not permitted",
+    ]
+
+
+def test_unpacker_minimumpython_ok(tmp_path):
+    """Config with a minimum Python version indicated, all ok."""
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text("""
+        name: testproject
+        exec:
+            entrypoint: ["foo", "bar"]
+        unpack-restrictions:
+            minimum-python-version: "3.10"
+    """)
+    config = load_config(config_file)
+    assert config.unpack_restrictions.minimum_python_version == "3.10"
+
+
+def test_unpacker_minimumpython_string(tmp_path):
+    """The minimum Python version must be a string."""
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text("""
+        name: testproject
+        exec:
+            entrypoint: ["foo", "bar"]
+        unpack-restrictions:
+            minimum-python-version: 3.10
+    """)
+    with pytest.raises(ConfigError) as cm:
+        load_config(config_file)
+    assert cm.value.errors == [
+        "- 'unpack-restrictions.minimum-python-version': str type expected",
     ]
