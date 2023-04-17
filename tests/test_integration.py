@@ -10,7 +10,25 @@ import sys
 import textwrap
 
 
-def test_basic_cycle_full(tmp_path):
+def _pack(tmp_path, monkeypatch, config_text):
+    """Set up the project config and pack it."""
+    # write the proper config
+    config = tmp_path / "pyempaq.yaml"
+    config.write_text(textwrap.dedent(config_text))
+
+    # pack it calling current pyempaq externally
+    env = dict(os.environ)  # need to replicate original env because of Windows
+    env["PYTHONPATH"] = os.getcwd()
+    cmd = [sys.executable, "-m", "pyempaq", str(config)]
+    monkeypatch.chdir(tmp_path)
+    subprocess.run(cmd, check=True, env=env)
+    packed_filepath = tmp_path / "testproject.pyz"
+    assert packed_filepath.exists()
+
+    return packed_filepath
+
+
+def test_basic_cycle_full(tmp_path, monkeypatch):
     """Verify that the sane packing/unpacking works.
 
     This checks that the unpacked/run project can:
@@ -50,26 +68,12 @@ def test_basic_cycle_full(tmp_path):
     reqspath = projectpath / "requirements.txt"
     reqspath.write_text("requests")
 
-    # write the proper config
-    config = tmp_path / "pyempaq.yaml"
-    config.write_text(textwrap.dedent(f"""
+    packed_filepath = _pack(tmp_path, monkeypatch, f"""
         name: testproject
         basedir: {projectpath}
         exec:
           script: ep.py
-    """))
-
-    # pack it calling current pyempaq externally
-    env = dict(os.environ)  # need to replicate original env because of Windows
-    env["PYTHONPATH"] = os.getcwd()
-    print("============ se ok!", sys.executable)
-    cmd = [sys.executable, "-m", "pyempaq", str(config)]
-    os.chdir(projectpath)
-    subprocess.run(cmd, check=True, env=env)
-    packed_filepath = projectpath / "testproject.pyz"
-    assert packed_filepath.exists()
-    print("=============== anduvo")
-    pumba
+    """)
 
     # run the packed file in a clean directory
     cleandir = tmp_path / "cleandir"
@@ -94,7 +98,7 @@ def test_basic_cycle_full(tmp_path):
     # assert "virtualenv module ok" in output_lines
 
 
-def test_pyz_location(tmp_path):
+def test_pyz_location(tmp_path, monkeypatch):
     """Check that the environment variable for the .pyz location is set."""
     # set up a basic test project, with an entrypoint that shows access to internals
     projectpath = tmp_path / "fakeproject"
@@ -106,25 +110,12 @@ def test_pyz_location(tmp_path):
         print(os.environ.get("PYEMPAQ_PYZ_PATH"))
     """))
 
-    # write the proper config
-    config = tmp_path / "pyempaq.yaml"
-    config.write_text(textwrap.dedent(f"""
+    packed_filepath = _pack(tmp_path, monkeypatch, f"""
         name: testproject
         basedir: {projectpath}
         exec:
           script: ep.py
-    """))
-
-    # pack it calling current pyempaq externally
-    env = dict(os.environ)  # need to replicate original env because of Windows
-    env["PYTHONPATH"] = os.getcwd()
-    print("============ se mal", sys.executable)
-    cmd = [sys.executable, "-m", "pyempaq", str(config)]
-    os.chdir(projectpath)
-    subprocess.run(cmd, check=True, env=env)
-    packed_filepath = projectpath / "testproject.pyz"
-    assert packed_filepath.exists()
-    print("=============== wtf")
+    """)
 
     # run the packed file in a clean directory
     cleandir = tmp_path / "cleandir"
@@ -135,8 +126,6 @@ def test_pyz_location(tmp_path):
     proc = subprocess.run(
         cmd,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-    print("================ cmd", cmd)
-    print("================ cleandir", cleandir)
     output_lines = [line for line in proc.stdout.split("\n") if line]
     assert proc.returncode == 0, "\n".join(output_lines)
 
