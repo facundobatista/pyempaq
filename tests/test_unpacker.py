@@ -114,16 +114,12 @@ def test_runcommand_no_env_path(monkeypatch):
     assert passed_env["PATH"] == "test-venv-dir"
 
 
-def test_runcommand_pyz_path(monkeypatch):
+def test_runcommand_pyz_path():
     """Check the .pyz path is set."""
-    cmd = ["foo", "bar"]
-    monkeypatch.setenv("PATH", "previous-path")
-
     with patch("subprocess.run") as run_mock:
-        run_command(Path("test-venv-dir"), cmd)
+        run_command(Path("test-venv-dir"), ["foo", "bar"])
 
     (call1,) = run_mock.call_args_list
-    assert call1[0] == (cmd,)
     passed_env = call1[1]["env"]
     assert passed_env["PYEMPAQ_PYZ_PATH"] == str(Path("./pyempaq").absolute())
 

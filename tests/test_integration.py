@@ -130,6 +130,8 @@ def test_pyz_location(tmp_path):
     proc = subprocess.run(
         cmd,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    print("================ cmd", cmd)
+    print("================ cleandir", cleandir)
     output_lines = [line for line in proc.stdout.split("\n") if line]
     assert proc.returncode == 0, "\n".join(output_lines)
 
