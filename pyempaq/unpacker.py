@@ -78,6 +78,7 @@ def run_command(venv_bin_dir: pathlib.Path, cmd: List[str]) -> None:
         newenv["PATH"] = newenv["PATH"] + ":" + venv_bin_dir_str
     else:
         newenv["PATH"] = venv_bin_dir_str
+    newenv["PYEMPAQ_PYZ_PATH"] = os.path.dirname(__file__)
     subprocess.run(cmd, env=newenv)
 
 
