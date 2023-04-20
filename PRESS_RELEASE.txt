@@ -8,7 +8,7 @@ With PyEmpaq you can convert any Python project into a single `.pyz` file with a
 
 That single file is everything that needs to be distributed. When the final user executes it, the original project will be expanded, its dependencies installed in a virtualenv, and then executed. Note that no special permissions or privileges are required, as everything happens in the user environment.
 
-Both the packaging and the execution are fully multiplatorm. This means that you can pack a project in Linux, Windows, Mac or whatever, and it will run ok in Linux, Windows, Mac or whatever. The only requirement is Python to be already installed.
+Both the packaging and the execution are fully multiplatorm. This means that you can pack a project in Linux, Windows, MacOS or whatever, and it will run ok in Linux, Windows, MacOS or whatever. The only requirement is Python to be already installed.
 
 
 What's new in this version?
@@ -30,14 +30,51 @@ What's new in this version?
 - Run tests (unit and integration) in Linux, MacOS and Windows.
 
 
-You can check the whole documentation, including demos and examples, in the docs page:
-
-    https://pyempaq.readthedocs.io/en/latest/
-
-The project:
-
-   https://github.com/facundobatista/pyempaq/ 
+For more details please [check the documentation](https://pyempaq.readthedocs.io/en/latest/) (which includes demos and examples). The project [exists in Github](https://github.com/facundobatista/pyempaq/).
 
 Enjoy,
 
 . Facundo
+
+
+-- 
+
+
+Release de PyEmpaq 0.3
+
+Estoy muy contento de anunciar el release de PyEmpaq 0.3.
+
+PyEmpaq es un simple pero poderoso empaquetador de Python para correr cualquier proyecto en cualquier lado.con las dependencias que tenga mientras sean instalables en un entorno virtual.
+
+Con PyEmpaq pueden convertir cualquier proyecto de Python en un archivo único `.pyz`, con todo el contenido del proyecto dentro.
+
+Ese único archivo es todo lo que necesita ser distribuido. Cuando la usuaria final lo ejecute, se expandirá el proyecto original, sus dependencias se instalarán en un entorno virtual, y se correrá. Como no se necesitan permisos o privilegios especiales, todo puede correr en cualquier entorno.
+
+Tanto el empaquetado como la ejecución son completamente multiplataformas. Esto significa que se puede empaquetar el proyecto en Linux, Windows, MacOS o donde sea, y correrá bien en Linux, Windows, MacOS o donde sea. El único requerimiento es tener Python instalado previamente.
+
+
+¿Qué hay de nuevo en esta versión?
+
+- Agregué opciones 'include' y 'exclude' en la configuración para tener el control completo del contenido del proyecto empaquetado.
+
+- Ahora se reusa el directorio del proyecto existente sólo si se completó satisfactoriamente en una instalación previa.
+
+- Soporta declarar una versión mínima de Python para correr el proyecto empaquetado.
+
+- Se expone el path del archivo `.pyz` al proyecto cuando se ejecuta.
+
+- Ahora usa logging internamente para exponer mensajes a desarrolladores y usuaries.
+
+- Se configura correctamente el PATH en el entorno del comando final.
+
+- Agregué una opción -V/--version al empaquetador para solamente mostrar la versión y salir.
+
+- Los tests (de unidad e integración) se corren automáticamente en Linux, MacOS and Windows.
+
+
+Para más detalles revisen [la documentación](https://pyempaq.readthedocs.io/en/latest/) (que incluye demos y ejemplos). El proyecto [está en Github](https://github.com/facundobatista/pyempaq/).
+
+Que lo disfruten.
+
+. Facundo
+

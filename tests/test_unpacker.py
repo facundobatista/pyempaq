@@ -12,6 +12,7 @@ from unittest.mock import patch
 
 import pytest
 from logassert import Exact, NOTHING
+from packaging import version
 
 import pyempaq.unpacker
 from pyempaq.unpacker import (
@@ -228,14 +229,14 @@ def test_projectdir_requirements(tmp_path, logs):
 @pytest.mark.parametrize("restrictions", [None, {}])
 def test_enforcerestrictions_empty(restrictions, logs):
     """Support for no restrictions."""
-    ok = restrictions_ok(restrictions)
+    ok = restrictions_ok(version, restrictions)
     assert ok is True
     assert NOTHING in logs.any_level
 
 
 def test_enforcerestrictions_pythonversion_smaller(logs):
     """Enforce minimum python version: smaller version."""
-    ok = restrictions_ok({"minimum_python_version": "0.8"})
+    ok = restrictions_ok(version, {"minimum_python_version": "0.8"})
     current = platform.python_version()
     assert ok is True
     assert f"Checking minimum Python version: indicated='0.8' current={current!r}" in logs.info
@@ -244,7 +245,7 @@ def test_enforcerestrictions_pythonversion_smaller(logs):
 
 def test_enforcerestrictions_pythonversion_bigger_enforced(logs):
     """Enforce minimum python version: bigger version."""
-    ok = restrictions_ok({"minimum_python_version": "42"})
+    ok = restrictions_ok(version, {"minimum_python_version": "42"})
     current = platform.python_version()
     assert ok is False
     assert f"Checking minimum Python version: indicated='42' current={current!r}" in logs.info
@@ -254,7 +255,7 @@ def test_enforcerestrictions_pythonversion_bigger_enforced(logs):
 def test_enforcerestrictions_pythonversion_bigger_ignored(logs, monkeypatch):
     """Ignore minimum python version for the bigger version case."""
     monkeypatch.setenv("PYEMPAQ_IGNORE_RESTRICTIONS", "minimum-python-version")
-    ok = restrictions_ok({"minimum_python_version": "42"})
+    ok = restrictions_ok(version, {"minimum_python_version": "42"})
     current = platform.python_version()
     assert ok is True
     assert f"Checking minimum Python version: indicated='42' current={current!r}" in logs.info
@@ -266,7 +267,7 @@ def test_enforcerestrictions_pythonversion_bigger_ignored(logs, monkeypatch):
 def test_enforcerestrictions_pythonversion_current(logs):
     """Enforce minimum python version: exactly current version."""
     current = platform.python_version()
-    ok = restrictions_ok({"minimum_python_version": current})
+    ok = restrictions_ok(version, {"minimum_python_version": current})
     assert ok is True
     assert (
         f"Checking minimum Python version: indicated={current!r} current={current!r}" in logs.info
@@ -276,5 +277,5 @@ def test_enforcerestrictions_pythonversion_current(logs):
 
 def test_enforcerestrictions_pythonversion_good_comparison(logs):
     """Enforce minimum python version using a proper comparison, not strings."""
-    ok = restrictions_ok({"minimum_python_version": "3.0009"})
+    ok = restrictions_ok(version, {"minimum_python_version": "3.0009"})
     assert ok is True

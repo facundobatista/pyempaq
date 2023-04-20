@@ -15,9 +15,8 @@ import sys
 import time
 import venv
 import zipfile
+from types import ModuleType
 from typing import List, Dict, Any
-
-from packaging import version
 
 from pyempaq.common import find_venv_bin, logged_exec
 
@@ -135,7 +134,7 @@ def setup_project_directory(
     (project_dir / COMPLETE_FLAG_FILE).touch()
 
 
-def restrictions_ok(restrictions: Dict[str, Any]) -> bool:
+def restrictions_ok(version: ModuleType, restrictions: Dict[str, Any]) -> bool:
     """Enforce the unpacking restrictions, if any; return True if all ok to continue."""
     if not restrictions:
         return True
@@ -165,12 +164,15 @@ def run():
     zf = zipfile.ZipFile(pyempaq_filepath)
     metadata = json.loads(zf.read("metadata.json").decode("utf8"))
     log("Loaded metadata: %s", metadata)
-    if not restrictions_ok(metadata["unpack_restrictions"]):
-        exit(1)
 
-    # load appdirs from the builtin venv
+    # load appdirs and packaging from the builtin venv (not at top of file because
+    # paths needed to be fixed)
     sys.path.insert(0, f"{pyempaq_filepath}/venv/")
-    import appdirs  # NOQA: this is an import not at top of file because paths needed to be fixed
+    import appdirs  # NOQA
+    from packaging import version  # NOQA
+
+    if not restrictions_ok(version, metadata["unpack_restrictions"]):
+        exit(1)
 
     pyempaq_dir = pathlib.Path(appdirs.user_data_dir()) / 'pyempaq'
     pyempaq_dir.mkdir(parents=True, exist_ok=True)

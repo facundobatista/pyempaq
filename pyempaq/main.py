@@ -33,6 +33,9 @@ logger = logging.getLogger(__name__)
 # collected arguments
 Args = namedtuple("Args", "project_name basedir entrypoint requirement_files")
 
+# dependencies needed for the unpacker to run ok
+UNPACKER_DEPS = ["appdirs", "packaging"]
+
 
 def get_pip():
     """Ensure an usable version of `pip`."""
@@ -208,7 +211,7 @@ def pack(config):
     logger.debug("Building internal dependencies dir")
     venv_dir = tmpdir / "venv"
     pip = get_pip()
-    cmd = [pip, "install", "appdirs", f"--target={venv_dir}"]
+    cmd = [pip, "install", *UNPACKER_DEPS, f"--target={venv_dir}"]
     logged_exec(cmd)
 
     metadata = prepare_metadata(origdir, config)
