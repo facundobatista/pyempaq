@@ -18,7 +18,7 @@ def get_version():
     is not yet available.
     """
     with open('pyempaq/_version.py') as fh:
-        m = re.search(r"\(([^']*)\)", fh.read())
+        m = re.search(r"VERSION *= *\((.*)\)", fh.read())
     if m is None:
         raise ValueError("Unrecognized version in 'pyempaq/_version.py'")
     return m.groups()[0].replace(', ', '.')
@@ -50,5 +50,5 @@ setup(
         "console_scripts": ["pyempaq = pyempaq.main:main"],
     },
     install_requires=install_requires,
-    python_requires=">=3.5",
+    python_requires=">=3.9",
 )

@@ -1,0 +1,48 @@
+# Steps
+
+Release early, release often. Don't be lazy.
+
+To use this doc: just replace X.Y.Z with the major.minor.patch version of
+the release. The sequence of commands below should be good to copy and
+paste, but please pay attention to details!
+
+
+- tag `main` 
+
+    git tag X.Y.Z
+    git push --tags
+
+
+- create release notes after all main changes from last tag
+
+    git log --first-parent main --decorate > release-X.Y.Z.txt
+
+
+- change the version number in `pyempaq/_version.py`
+
+
+- build the tarball 
+
+    rm -rf dist/
+    python3 setup.py sdist bdist_wheel
+
+
+- release in Github
+
+    xdg-open https://github.com/facundobatista/pyempaq/tags
+
+    You should see all project tags, the top one should be this release.
+    In the menu at right of the tag tag you just created, choose 'create
+    release'. Copy the release notes into the release description.
+
+    Attach the `dist/` files
+
+    Click on "Publish release"
+
+
+- release to PyPI
+
+    fades -d twine -x twine upload --verbose dist/*
+
+
+- commit, push

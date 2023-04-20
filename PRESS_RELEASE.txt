@@ -1,0 +1,43 @@
+PyEmpaq 0.3 released
+
+I'm happy to announce the release of PyEmpaq 0.3. 
+
+PyEmpaq is a simple but powerful Python packer to run any project with any virtualenv dependencies anywhwere.
+
+With PyEmpaq you can convert any Python project into a single `.pyz` file with all the project's content packed inside. 
+
+That single file is everything that needs to be distributed. When the final user executes it, the original project will be expanded, its dependencies installed in a virtualenv, and then executed. Note that no special permissions or privileges are required, as everything happens in the user environment.
+
+Both the packaging and the execution are fully multiplatorm. This means that you can pack a project in Linux, Windows, Mac or whatever, and it will run ok in Linux, Windows, Mac or whatever. The only requirement is Python to be already installed.
+
+
+What's new in this version?
+
+- Added 'include' and 'exclude' configuration options to have full control on what is inside the packed file.
+
+- Reuse the existing project directory only if it has a complete previous installation.
+
+- Support the declaration of a minimum Python version to run the packed project.
+
+- Expose the .pyz path to the project being run.
+
+- Now used logging to expose messages to developer and users, with different verbosity levels.
+
+- Set up the proper PATH in the end command environment.
+
+- Added a -V/--version option to just print the version and exit.
+
+- Run tests (unit and integration) in Linux, MacOS and Windows.
+
+
+You can check the whole documentation, including demos and examples, in the docs page:
+
+    https://pyempaq.readthedocs.io/en/latest/
+
+The project:
+
+   https://github.com/facundobatista/pyempaq/ 
+
+Enjoy,
+
+. Facundo
