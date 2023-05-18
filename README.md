@@ -97,7 +97,7 @@ You can control verbosity by adding these command line parameters to control log
 - `-v, --verbose` - Show detailed information, typically of interest only when diagnosing problems.
 - `-q, --quiet` - Only events of WARNING level and above will be tracked.
 
-All that said, there is an special option `-V, --version` that if used will just print the version and exit.
+All that said, there is an special option `-V, --version` (new in v0.3) that if used will just print the version and exit.
 
 > **Note**
 > In the **execution phase**, if you have an environment variable `PYEMPAQ_DEBUG=1` it will show the Pyempaq log lines during the execution.
@@ -127,13 +127,13 @@ The following is the structure of the `pyempaq.yaml` configuration file:
 
 - `dependencies` [optional]: a list of strings to directly specify packages to be installed by `pip` without needing to have a requirement file.
 
-- `include` [optional]: a list of strings, each one specifying a pattern to decide what files and directories to include in the pack (see below); if not included it defaults to `["./**"]` which means all the files and directories in the project.
+- `include` [optional, new in v0.3]: a list of strings, each one specifying a pattern to decide what files and directories to include in the pack (see below); if not included it defaults to `["./**"]` which means all the files and directories in the project.
 
-- `exclude` [optional]: a list of strings, each one specifying a pattern to decide what files and directories to exclude from the pack (see below).
+- `exclude` [optional, new in v0.3]: a list of strings, each one specifying a pattern to decide what files and directories to exclude from the pack (see below).
 
-- `unpack-restrictions` [optional]: a section to specify different restrictions to be verified/enforced during unpack.
+- `unpack-restrictions` [optional, new in v0.3]: a section to specify different restrictions to be verified/enforced during unpack.
 
-    - `minimum-python-version` [optional]: a string specifying the minimum version possible to run correctly.
+    - `minimum-python-version` [optional, new in v0.3]: a string specifying the minimum version possible to run correctly.
 
 All specified filepaths must exist inside the project and must be relative (to the project's base directory), with the exception of `basedir` itself which can be absolute or relative (to the configuration file location).
 
