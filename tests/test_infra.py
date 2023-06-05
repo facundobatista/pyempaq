@@ -1,4 +1,4 @@
-# Copyright 2021 Facundo Batista
+# Copyright 2021-2023 Facundo Batista
 # Licensed under the GPL v3 License
 # For further info, check https://github.com/facundobatista/pyempaq
 
@@ -8,6 +8,7 @@ import io
 import itertools
 import os
 import re
+import subprocess
 from unittest.mock import patch
 
 import pydocstyle
@@ -26,6 +27,17 @@ def get_python_filepaths(*, roots=None, python_paths=None):
     return python_paths
 
 
+def test_codespell():
+    """Verify all words are correctly spelled."""
+    cmd = ["codespell", "pyempaq", "tests", "docs"]
+    proc = subprocess.run(cmd, capture_output=True, text=True)
+    report = [x.strip() for x in proc.stdout.split("\n")]
+    indented_issues = [f" - {issue}" for issue in report if issue]
+    if indented_issues:
+        msg = "Please fix the following codespell issues!\n" + "\n".join(indented_issues)
+        pytest.fail(msg, pytrace=False)
+
+
 def test_pep8():
     """Verify all files are nicely styled."""
     python_filepaths = get_python_filepaths()
@@ -34,7 +46,7 @@ def test_pep8():
     with patch("sys.stdout", fake_stdout):
         report = style_guide.check_files(python_filepaths)
 
-    # if flake8 didnt' report anything, we're done
+    # if flake8 didn't report anything, we're done
     if report.total_errors == 0:
         return
 
