@@ -1,4 +1,4 @@
-# Copyright 2021 Facundo Batista
+# Copyright 2021-2023 Facundo Batista
 # Licensed under the GPL v3 License
 # For further info, check https://github.com/facundobatista/pyempaq
 
@@ -51,28 +51,24 @@ def test_basic_cycle_full(tmp_path, monkeypatch):
 
         os.access(os.path.join("media", "bar.bin"), os.R_OK)
         print("internal binary ok")
+
+        import requests
+        assert "pyempaq" in requests.__file__
+        print("virtualenv module ok")
     """))
-    # XXX Facundo 2021-08-01: this check is disabled until we discover why venv.create
-    # not working in GA
-    #
-    #     import requests
-    #     assert "pyempaq" in requests.__file__
-    #     print("virtualenv module ok")
-    # """))
     binarypath = projectpath / "media" / "bar.bin"
     binarypath.parent.mkdir()
     binarypath.write_bytes(b"123")
     modulepath = projectpath / "src" / "foo.py"
     modulepath.parent.mkdir()
     modulepath.write_text("pass")
-    reqspath = projectpath / "requirements.txt"
-    reqspath.write_text("requests")
 
     packed_filepath = _pack(tmp_path, monkeypatch, f"""
         name: testproject
         basedir: {projectpath}
         exec:
           script: ep.py
+        dependencies: [requests]
     """)
 
     # run the packed file in a clean directory
@@ -83,19 +79,17 @@ def test_basic_cycle_full(tmp_path, monkeypatch):
     cmd = [sys.executable, "testproject.pyz"]
     proc = subprocess.run(
         cmd,
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-    output_lines = proc.stdout.split("\n")
-    assert proc.returncode == 0, "\n".join(output_lines)
-
-    # verify output
-    # XXX Facundo 2021-07-29: now we just check the info is there, in the future we want to check
-    # that is ALL the output it was produced (need to fix some issues about unpacker verbosity)
-    assert "run ok" in output_lines
-    assert "internal module ok" in output_lines
-    assert "internal binary ok" in output_lines
-    # XXX Facundo 2021-08-01: this check is disabled until we discover why venv.create
-    # not working in GA
-    # assert "virtualenv module ok" in output_lines
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        universal_newlines=True,
+    )
+    assert proc.returncode == 0, repr(proc.stdout)
+    assert proc.stdout == textwrap.dedent("""\
+        run ok
+        internal module ok
+        internal binary ok
+        virtualenv module ok
+    """)
 
 
 def test_pyz_location(tmp_path, monkeypatch):

@@ -157,7 +157,7 @@ def restrictions_ok(version: ModuleType, restrictions: Dict[str, Any]) -> bool:
 
 def run():
     """Run the unpacker."""
-    log("Pyempaq start")
+    log("PyEmpaq start")
 
     # parse pyempaq metadata from the zip file
     pyempaq_filepath = pathlib.Path.cwd() / sys.argv[0]
@@ -192,7 +192,7 @@ def run():
     log("Running payload: %s", cmd)
     venv_bin_dir = python_exec.parent
     run_command(venv_bin_dir, cmd)
-    log("Pyempaq done")
+    log("PyEmpaq done")
 
 
 if __name__ == "__main__":
