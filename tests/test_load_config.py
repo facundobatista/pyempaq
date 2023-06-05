@@ -304,7 +304,7 @@ def test_exec_module_outside_project(tmp_path):
 
 
 def test_exec_module_absolute(tmp_path, drive_letter):
-    """Check module subkey using absoule path."""
+    """Check module subkey using absolute path."""
     config_file = tmp_path / "config.yaml"
     config_file.write_text(f"""
         name: testproject

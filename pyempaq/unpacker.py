@@ -25,7 +25,7 @@ from pyempaq.common import find_venv_bin, logged_exec
 # one to run unpacker itself)
 PROJECT_VENV_DIR = "project_venv"
 
-# the file name to flag that the project setup completed succesfully
+# the file name to flag that the project setup completed successfully
 COMPLETE_FLAG_FILE = "complete.flag"
 
 # setup logging
