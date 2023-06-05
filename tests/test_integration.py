@@ -1,4 +1,4 @@
-# Copyright 2021 Facundo Batista
+# Copyright 2021-2023 Facundo Batista
 # Licensed under the GPL v3 License
 # For further info, check https://github.com/facundobatista/pyempaq
 
@@ -62,14 +62,13 @@ def test_basic_cycle_full(tmp_path, monkeypatch):
     modulepath = projectpath / "src" / "foo.py"
     modulepath.parent.mkdir()
     modulepath.write_text("pass")
-    reqspath = projectpath / "requirements.txt"
-    reqspath.write_text("requests")
 
     packed_filepath = _pack(tmp_path, monkeypatch, f"""
         name: testproject
         basedir: {projectpath}
         exec:
           script: ep.py
+        dependencies: [requests]
     """)
 
     # run the packed file in a clean directory
@@ -83,7 +82,6 @@ def test_basic_cycle_full(tmp_path, monkeypatch):
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         universal_newlines=True,
-        env={"PYEMPAQ_DEBUG": "0"},
     )
     assert proc.returncode == 0, repr(proc.stdout)
     assert proc.stdout == textwrap.dedent("""\
