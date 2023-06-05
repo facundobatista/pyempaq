@@ -17,6 +17,9 @@ _BASEDIR = None
 # directory where the config is taken from, which is the default for basedir
 _CONFIGDIR = None
 
+# the default include value to get all the project inside
+DEFAULT_INCLUDE_LIST = ["./**"]
+
 
 class ConfigError(Exception):
     """Specific errors found in the config."""
@@ -100,7 +103,17 @@ class Executor(ModelConfigDefaults, alias_generator=lambda s: s.replace("_", "-"
     default_args: List[pydantic.StrictStr] = []
 
 
-class Config(ModelConfigDefaults, validate_all=False):
+class UnpackRestrictions(ModelConfigDefaults, alias_generator=lambda s: s.replace("_", "-")):
+    """Restrictions that will be verified/enforced during unpack."""
+
+    minimum_python_version: pydantic.StrictStr = None
+
+
+class Config(
+    ModelConfigDefaults,
+    validate_all=False,
+    alias_generator=lambda s: s.replace("_", "-"),
+):
     """Definition of PyEmpaq's configuration."""
 
     name: str
@@ -108,6 +121,9 @@ class Config(ModelConfigDefaults, validate_all=False):
     exec: Executor
     requirements: List[RelativeFile] = []
     dependencies: List[str] = []
+    include: List[str] = DEFAULT_INCLUDE_LIST
+    exclude: List[str] = []
+    unpack_restrictions: UnpackRestrictions = None
 
     @pydantic.validator("basedir")
     def ensure_basedir(cls, value):

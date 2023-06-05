@@ -55,7 +55,7 @@ The **packing phase** is executed by the project developer, only once, before di
 
 In this packing phase, PyEmpaq builds the indicated packed file, putting inside:
 
-- the payload project, with all the indicated modules and binary files (currently *everything from the project*, but this will be improved in the future)
+- the payload project, with all the indicated modules and binary files
 
 - an *unpacker* script from PyEmpaq, which will be run during the execution phase
 
@@ -97,6 +97,8 @@ You can control verbosity by adding these command line parameters to control log
 - `-v, --verbose` - Show detailed information, typically of interest only when diagnosing problems.
 - `-q, --quiet` - Only events of WARNING level and above will be tracked.
 
+All that said, there is an special option `-V, --version` (new in v0.3) that if used will just print the version and exit.
+
 > **Note**
 > In the **execution phase**, if you have an environment variable `PYEMPAQ_DEBUG=1` it will show the Pyempaq log lines during the execution.
 
@@ -109,7 +111,7 @@ The following is the structure of the `pyempaq.yaml` configuration file:
 
 - `name` [mandatory]: the name of the project.
 
-- `basedir` [optional, defaults to where the configuration file is located]: the project's base directory.
+- `basedir` [optional]: the project's base directory; if not included it defaults to where the configuration file is located.
 
 - `exec` [mandatory]: the section where is defined the information to execute the project once unpacked; it holds different subkeys (some subkeys are marked with †: ONE of those keys must be present, but only ONE):
 
@@ -119,13 +121,25 @@ The following is the structure of the `pyempaq.yaml` configuration file:
 
     - `entrypoint` [†]: freeform, as a list of strings; when unpacking PyEmpaq will only insert the proper python3 at the beginning: `python3 STR1 STR2 ...`.
 
-    - `default-args` [optional]: the default arguments to be passed to the script/module/entrypoint (if not overriden when the distributed `.pyz` is executed).
+    - `default-args` [optional]: the default arguments to be passed to the script/module/entrypoint (if not overridden when the distributed `.pyz` is executed).
 
-- `requirements`: a list of filepaths pointing to the requirement files with pip-installable dependencies.
+- `requirements` [optional]: a list of filepaths pointing to the requirement files with pip-installable dependencies.
 
-- `dependencies`: a list of strings to directly specify packages to be installed by `pip` without needing to have a requirement file.
+- `dependencies` [optional]: a list of strings to directly specify packages to be installed by `pip` without needing to have a requirement file.
+
+- `include` [optional, new in v0.3]: a list of strings, each one specifying a pattern to decide what files and directories to include in the pack (see below); if not included it defaults to `["./**"]` which means all the files and directories in the project.
+
+- `exclude` [optional, new in v0.3]: a list of strings, each one specifying a pattern to decide what files and directories to exclude from the pack (see below).
+
+- `unpack-restrictions` [optional, new in v0.3]: a section to specify different restrictions to be verified/enforced during unpack.
+
+    - `minimum-python-version` [optional, new in v0.3]: a string specifying the minimum version possible to run correctly.
 
 All specified filepaths must exist inside the project and must be relative (to the project's base directory), with the exception of `basedir` itself which can be absolute or relative (to the configuration file location).
+
+Both `include` and `exclude` options use pattern matching according to the rules used by the Unix shell, using `*`, `?`, and character ranges expressed with `[]`. Also `**` will match any files and zero or more directories. For more information or subtleties check the [`glob.glob`](https://docs.python.org/dev/library/glob.html#glob.glob) documentation.
+
+Note that the final user may ignore/bypass any unpack restrictions using the `PYEMPAQ_IGNORE_RESTRICTIONS` environment variable with a value of comma-separated names of which restrictions to ignore.
 
 The following are examples of different configuration files (which were the ones used to build the packed examples mentioned before):
 
@@ -134,6 +148,15 @@ The following are examples of different configuration files (which were the ones
 - [the simple game](https://github.com/facundobatista/pyempaq/blob/main/examples/pyempaq-game.yaml?raw=True)
 
 - [the full desktop app](https://github.com/facundobatista/pyempaq/blob/main/examples/pyempaq-desktop-app.yaml?raw=True)
+
+
+## Context of the project being run
+
+When the packed script/module/whatever is run in the unpacking phase, it will be executed inside the virtualenv with the needed requirements/dependencies (freshly created and installed or reused from a previous run).
+
+Also, the following environment variable will be set:
+
+- `PYEMPAQ_PYZ_PATH`: the absolute path to the `.pyz` run by the user
 
 
 ## How to install PyEmpaq
@@ -162,6 +185,8 @@ PyEmpaq sources come with a small example project if you want to play a little p
 - a `pyempaq.yaml` with the configuration for PyEmpaq.
 
 - a `ep.py` file which is the project's entrypoint; all it does is to inform it started, import the internal module, access the media files, and use the declared dependency, reporting every step.
+
+- a `secrets.txt` file that must not be included in the packed file.
 
 This explores most of the needs of any project. You can try this example, and surely after you will be ready to actually pack any other project you want.
 

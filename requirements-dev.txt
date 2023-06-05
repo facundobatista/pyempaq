@@ -1,7 +1,9 @@
 -r requirements.txt
 
+codespell
 flake8
 logassert
+packaging
 pydocstyle
 pytest
 pytest-subprocess
