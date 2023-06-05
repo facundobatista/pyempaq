@@ -165,16 +165,16 @@ def run():
     metadata = json.loads(zf.read("metadata.json").decode("utf8"))
     log("Loaded metadata: %s", metadata)
 
-    # load appdirs and packaging from the builtin venv (not at top of file because
+    # load platformdirs and packaging from the builtin venv (not at top of file because
     # paths needed to be fixed)
     sys.path.insert(0, f"{pyempaq_filepath}/venv/")
-    import appdirs  # NOQA
+    import platformdirs  # NOQA
     from packaging import version  # NOQA
 
     if not restrictions_ok(version, metadata["unpack_restrictions"]):
         exit(1)
 
-    pyempaq_dir = pathlib.Path(appdirs.user_data_dir()) / 'pyempaq'
+    pyempaq_dir = pathlib.Path(platformdirs.user_data_dir()) / 'pyempaq'
     pyempaq_dir.mkdir(parents=True, exist_ok=True)
     log("Temp base dir: %r", str(pyempaq_dir))
 

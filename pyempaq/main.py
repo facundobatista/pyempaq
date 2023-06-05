@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 Args = namedtuple("Args", "project_name basedir entrypoint requirement_files")
 
 # dependencies needed for the unpacker to run ok
-UNPACKER_DEPS = ["appdirs", "packaging"]
+UNPACKER_DEPS = ["packaging", "platformdirs"]
 
 
 def get_pip():
