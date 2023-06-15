@@ -9,6 +9,8 @@ import subprocess
 import sys
 import textwrap
 
+import pytest
+
 
 def _pack(tmp_path, monkeypatch, config_text):
     """Set up the project config and pack it."""
@@ -28,7 +30,8 @@ def _pack(tmp_path, monkeypatch, config_text):
     return packed_filepath
 
 
-def test_basic_cycle_full(tmp_path, monkeypatch):
+@pytest.mark.parametrize("expected_code", [0, 1])
+def test_basic_cycle_full(tmp_path, monkeypatch, expected_code):
     """Verify that the sane packing/unpacking works.
 
     This checks that the unpacked/run project can:
@@ -41,7 +44,7 @@ def test_basic_cycle_full(tmp_path, monkeypatch):
     projectpath = tmp_path / "fakeproject"
     entrypoint = projectpath / "ep.py"
     entrypoint.parent.mkdir()
-    entrypoint.write_text(textwrap.dedent("""
+    entrypoint.write_text(textwrap.dedent(f"""
         import os
 
         print("run ok")
@@ -55,6 +58,7 @@ def test_basic_cycle_full(tmp_path, monkeypatch):
         import requests
         assert "pyempaq" in requests.__file__
         print("virtualenv module ok")
+        exit({expected_code})
     """))
     binarypath = projectpath / "media" / "bar.bin"
     binarypath.parent.mkdir()
@@ -83,7 +87,7 @@ def test_basic_cycle_full(tmp_path, monkeypatch):
         stderr=subprocess.STDOUT,
         universal_newlines=True,
     )
-    assert proc.returncode == 0, repr(proc.stdout)
+    assert proc.returncode == expected_code, repr(proc.stdout)
     assert proc.stdout == textwrap.dedent("""\
         run ok
         internal module ok
