@@ -30,6 +30,26 @@ def _pack(tmp_path, monkeypatch, config_text):
     return packed_filepath
 
 
+def _run_pack(packed_filepath, basedir):
+    """Run the packed project in clean directory.
+
+    Returns the process and the pack's final path.
+    """
+    # run the packed file in a clean directory
+    cleandir = basedir / "cleandir"
+    cleandir.mkdir()
+    new_path = packed_filepath.rename(cleandir / "testproject.pyz")
+    os.chdir(cleandir)
+    cmd = [sys.executable, "testproject.pyz"]
+    proc = subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        universal_newlines=True,
+    )
+    return proc, new_path
+
+
 @pytest.mark.parametrize("expected_code", [0, 1])
 def test_basic_cycle_full(tmp_path, monkeypatch, expected_code):
     """Verify that the sane packing/unpacking works.
@@ -75,18 +95,7 @@ def test_basic_cycle_full(tmp_path, monkeypatch, expected_code):
         dependencies: [requests]
     """)
 
-    # run the packed file in a clean directory
-    cleandir = tmp_path / "cleandir"
-    cleandir.mkdir()
-    packed_filepath.rename(cleandir / "testproject.pyz")
-    os.chdir(cleandir)
-    cmd = [sys.executable, "testproject.pyz"]
-    proc = subprocess.run(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        universal_newlines=True,
-    )
+    proc, _ = _run_pack(packed_filepath, tmp_path)
     assert proc.returncode == expected_code, repr(proc.stdout)
     assert proc.stdout == textwrap.dedent("""\
         run ok
@@ -115,15 +124,7 @@ def test_pyz_location(tmp_path, monkeypatch):
           script: ep.py
     """)
 
-    # run the packed file in a clean directory
-    cleandir = tmp_path / "cleandir"
-    cleandir.mkdir()
-    packed_filepath.rename(cleandir / "renamed.pyz")
-    os.chdir(cleandir)
-    cmd = [sys.executable, "renamed.pyz"]
-    proc = subprocess.run(
-        cmd,
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    proc, run_path = _run_pack(packed_filepath, tmp_path)
     output_lines = [line for line in proc.stdout.split("\n") if line]
     assert proc.returncode == 0, "\n".join(output_lines)
 
