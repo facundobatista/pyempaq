@@ -77,6 +77,11 @@ In this execution phase, the *unpacker* script put by PyEmpaq inside the packed 
 
 The verification that the unpacker does to see if has a reusable setup from the past is based on the `.pyz` timestamp; if it changed (a new file was distributed), a new setup will be created and used.
 
+PyEmpaq transparently returns the payload's exit code except when it must exit before the execution of the payload.
+In that case, it uses special codes equal or above 64, see below for their meaning.
+
+- `64`: `unpack-restrictions` are not met on the final user's system.
+
 
 ## Command line options
 
