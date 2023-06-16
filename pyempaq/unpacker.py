@@ -28,6 +28,11 @@ PROJECT_VENV_DIR = "project_venv"
 # the file name to flag that the project setup completed successfully
 COMPLETE_FLAG_FILE = "complete.flag"
 
+# special exit codes returned by the unpacker
+EXIT_CODES = {
+    "restrictions_not_met": 64
+}
+
 # setup logging
 logger = logging.getLogger()
 handler = logging.StreamHandler()
@@ -69,7 +74,7 @@ def build_command(python_exec: str, metadata: Dict[str, str], sys_args: List[str
     return cmd
 
 
-def run_command(venv_bin_dir: pathlib.Path, cmd: List[str]) -> None:
+def run_command(venv_bin_dir: pathlib.Path, cmd: List[str]) -> subprocess.CompletedProcess:
     """Run the command with a custom context."""
     newenv = os.environ.copy()
     venv_bin_dir_str = str(venv_bin_dir)
@@ -78,7 +83,7 @@ def run_command(venv_bin_dir: pathlib.Path, cmd: List[str]) -> None:
     else:
         newenv["PATH"] = venv_bin_dir_str
     newenv["PYEMPAQ_PYZ_PATH"] = os.path.dirname(__file__)
-    subprocess.run(cmd, env=newenv)
+    return subprocess.run(cmd, env=newenv)
 
 
 def setup_project_directory(
@@ -172,7 +177,7 @@ def run():
     from packaging import version  # NOQA
 
     if not restrictions_ok(version, metadata["unpack_restrictions"]):
-        exit(1)
+        exit(EXIT_CODES["restrictions_not_met"])
 
     pyempaq_dir = pathlib.Path(platformdirs.user_data_dir()) / 'pyempaq'
     pyempaq_dir.mkdir(parents=True, exist_ok=True)
@@ -191,8 +196,10 @@ def run():
     cmd = build_command(str(python_exec), metadata, sys.argv[1:])
     log("Running payload: %s", cmd)
     venv_bin_dir = python_exec.parent
-    run_command(venv_bin_dir, cmd)
+    proc = run_command(venv_bin_dir, cmd)
+    log("Exit code: %s", proc.returncode)
     log("PyEmpaq done")
+    exit(proc.returncode)
 
 
 if __name__ == "__main__":

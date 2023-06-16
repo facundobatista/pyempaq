@@ -8,6 +8,7 @@ import os
 import platform
 import zipfile
 from pathlib import Path
+from subprocess import CompletedProcess
 from unittest.mock import patch
 
 import pytest
@@ -125,6 +126,17 @@ def test_runcommand_pyz_path():
     (call1,) = run_mock.call_args_list
     passed_env = call1[1]["env"]
     assert passed_env["PYEMPAQ_PYZ_PATH"] == os.path.dirname(pyempaq.unpacker.__file__)
+
+
+def test_runcommand_returns_exit_code():
+    """Check the completed process is returned."""
+    cmd = ["foo", "bar"]
+    code = 1
+    with patch("subprocess.run") as run_mock:
+        run_mock.return_value = CompletedProcess(cmd, code)
+        proc = run_command(Path("test-venv-dir"), cmd)
+        assert proc.args == cmd
+        assert proc.returncode == code
 
 
 # --- tests for the project directory setup
