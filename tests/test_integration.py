@@ -10,6 +10,9 @@ import sys
 import textwrap
 
 import pytest
+import yaml
+
+from pyempaq.unpacker import EXIT_CODES
 
 
 def _pack(tmp_path, monkeypatch, config_text):
@@ -130,4 +133,31 @@ def test_pyz_location(tmp_path, monkeypatch):
 
     # verify output
     (exposed_pyz_path,) = output_lines
-    assert exposed_pyz_path == str(cleandir / "renamed.pyz")
+    assert exposed_pyz_path == str(run_path)
+
+
+@pytest.mark.parametrize("expected_code,extraconf,log", [
+    (
+        EXIT_CODES["restrictions_not_met"],
+        {"unpack-restrictions": {"minimum-python-version": "99.99"}},
+        "Failed to comply with version restriction: need at least Python"
+    )
+])
+def test_special_exit_codes(tmp_path, monkeypatch, expected_code, extraconf, log):
+    """Test special exit codes returned by pyempaq."""
+    projectpath = tmp_path / "fakeproject"
+    projectpath.mkdir()
+    (projectpath / "main.py").write_text("exit(0)")
+    conf = {
+        "name": "testproject",
+        "basedir": str(projectpath),
+        "exec": {
+            "script": "main.py"
+        },
+        **extraconf
+    }
+    packed_filepath = _pack(projectpath, monkeypatch, yaml.safe_dump(conf))
+    proc, _ = _run_pack(packed_filepath, tmp_path)
+
+    assert proc.returncode == expected_code
+    assert log in proc.stdout or ""

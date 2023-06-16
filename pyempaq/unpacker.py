@@ -28,6 +28,11 @@ PROJECT_VENV_DIR = "project_venv"
 # the file name to flag that the project setup completed successfully
 COMPLETE_FLAG_FILE = "complete.flag"
 
+# special exit codes returned by the unpacker
+EXIT_CODES = {
+    "restrictions_not_met": 64
+}
+
 # setup logging
 logger = logging.getLogger()
 handler = logging.StreamHandler()
@@ -172,7 +177,7 @@ def run():
     from packaging import version  # NOQA
 
     if not restrictions_ok(version, metadata["unpack_restrictions"]):
-        exit(1)
+        exit(EXIT_CODES["restrictions_not_met"])
 
     pyempaq_dir = pathlib.Path(platformdirs.user_data_dir()) / 'pyempaq'
     pyempaq_dir.mkdir(parents=True, exist_ok=True)
