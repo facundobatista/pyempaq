@@ -69,7 +69,7 @@ def build_command(python_exec: str, metadata: Dict[str, str], sys_args: List[str
     return cmd
 
 
-def run_command(venv_bin_dir: pathlib.Path, cmd: List[str]) -> int:
+def run_command(venv_bin_dir: pathlib.Path, cmd: List[str]) -> subprocess.CompletedProcess:
     """Run the command with a custom context."""
     newenv = os.environ.copy()
     venv_bin_dir_str = str(venv_bin_dir)
@@ -78,7 +78,7 @@ def run_command(venv_bin_dir: pathlib.Path, cmd: List[str]) -> int:
     else:
         newenv["PATH"] = venv_bin_dir_str
     newenv["PYEMPAQ_PYZ_PATH"] = os.path.dirname(__file__)
-    return subprocess.run(cmd, env=newenv).returncode
+    return subprocess.run(cmd, env=newenv)
 
 
 def setup_project_directory(
@@ -191,10 +191,10 @@ def run():
     cmd = build_command(str(python_exec), metadata, sys.argv[1:])
     log("Running payload: %s", cmd)
     venv_bin_dir = python_exec.parent
-    code = run_command(venv_bin_dir, cmd)
-    log("Exit code: %s", code)
+    proc = run_command(venv_bin_dir, cmd)
+    log("Exit code: %s", proc.returncode)
     log("PyEmpaq done")
-    exit(code)
+    exit(proc.returncode)
 
 
 if __name__ == "__main__":
