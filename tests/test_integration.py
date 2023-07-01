@@ -26,7 +26,7 @@ def _pack(tmp_path, monkeypatch, config_text):
     env["PYTHONPATH"] = os.getcwd()
     cmd = [sys.executable, "-m", "pyempaq", str(config)]
     monkeypatch.chdir(tmp_path)
-    subprocess.run(cmd, check=True, env=env)
+    subprocess.run(cmd, check=True, env=env, capture_output=True)
     packed_filepath = tmp_path / "testproject.pyz"
     assert packed_filepath.exists()
 
@@ -161,3 +161,70 @@ def test_special_exit_codes(tmp_path, monkeypatch, expected_code, extraconf, log
 
     assert proc.returncode == expected_code
     assert log in proc.stdout or ""
+
+
+@pytest.mark.parametrize("extraconf", [
+    # the default scenario, all project files are included
+    {},
+    # the include scenario with requirements explicitly included
+    {"include": ["main.py", "req1.txt", "req2.txt"]}
+])
+def test_pack_with_requirements(tmp_path, monkeypatch, extraconf):
+    """Test pack with provided requirements works."""
+    projectpath = tmp_path / "fakeproject"
+    projectpath.mkdir()
+    reqs = ["req1.txt", "req2.txt"]
+    for req in reqs:
+        # don't include a package to speedup the test
+        (projectpath / req).touch()
+    (projectpath / "main.py").write_text("print('ok')")
+    conf = {
+        "name": "testproject",
+        "basedir": str(projectpath),
+        "requirements": reqs,
+        "exec": {
+            "script": "main.py"
+        },
+        **extraconf
+    }
+    packed_filepath = _pack(projectpath, monkeypatch, yaml.safe_dump(conf))
+    proc, _ = _run_pack(packed_filepath, tmp_path)
+
+    assert proc.returncode == 0
+    assert proc.stdout.strip() == "ok"
+
+
+def test_pack_exits_on_requirements_non_included(tmp_path, monkeypatch):
+    """Test pack behaviour for missing requirements.
+
+    A project is not packed when some requirements are not included in it
+    via the "include" config.
+    """
+    projectpath = tmp_path / "fakeproject"
+    projectpath.mkdir()
+    reqs = ["req1.txt", "req2.txt"]
+    for req in reqs:
+        # don't include a package to speedup the test
+        (projectpath / req).touch()
+    (projectpath / "main.py").write_text("print('ok')")
+    conf = {
+        "name": "testproject",
+        "basedir": str(projectpath),
+        "include": ["main.py"],
+        "requirements": reqs,
+        "exec": {
+            "script": "main.py"
+        },
+    }
+
+    with pytest.raises(subprocess.CalledProcessError) as exc:
+        _pack(projectpath, monkeypatch, yaml.safe_dump(conf))
+
+    error = (
+        "ERROR Pack error: The indicated requirements "
+        "['req1.txt', 'req2.txt'] "
+        "are not included along the packed files; ensure to include them "
+        "explicitly in the config."
+    ).encode()
+    assert exc.value.returncode == 2
+    assert error in exc.value.stderr

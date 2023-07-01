@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import List
 
 from pyempaq import __version__
-from pyempaq.common import find_venv_bin, logged_exec, ExecutionError
+from pyempaq.common import find_venv_bin, logged_exec, ExecutionError, PackError
 from pyempaq.config_manager import load_config, ConfigError, Config
 
 
@@ -195,6 +195,18 @@ def pack(config):
     origdir = tmpdir / "orig"
     copy_project(config.basedir, origdir, config.include, config.exclude)
 
+    # ensure all requirements are included by users
+    missing_requirements = []
+    for path in config.requirements:
+        if not (origdir / path).exists():
+            missing_requirements.append(str(path))
+
+    if missing_requirements:
+        raise PackError(
+            f"The indicated requirements {missing_requirements} are not included "
+            "along the packed files; ensure to include them explicitly in the config."
+        )
+
     # copy the common module
     pyempaq_dir = tmpdir / "pyempaq"
     pyempaq_dir.mkdir()
@@ -260,4 +272,12 @@ def main():
         for err in err.errors:
             logger.error(err)
         exit(1)
-    pack(config)
+
+    try:
+        pack(config)
+    except PackError as exc:
+        logger.error("Pack error: %s", exc)
+        exit(2)
+    except Exception as exc:
+        logger.error("Unknown internal error: %r", exc)
+        exit(3)
