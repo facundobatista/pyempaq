@@ -173,15 +173,13 @@ def test_pack_with_requirements(tmp_path, monkeypatch, extraconf):
     """Test pack with provided requirements works."""
     projectpath = tmp_path / "fakeproject"
     projectpath.mkdir()
-    reqs = ["req1.txt", "req2.txt"]
-    for req in reqs:
-        # don't include a package to speedup the test
-        (projectpath / req).touch()
-    (projectpath / "main.py").write_text("print('ok')")
+    (projectpath / "req1.txt").write_text("requests")
+    (projectpath / "req2.txt").touch()
+    (projectpath / "main.py").write_text("import requests;print('ok')")
     conf = {
         "name": "testproject",
         "basedir": str(projectpath),
-        "requirements": reqs,
+        "requirements": ["req1.txt", "req2.txt"],
         "exec": {
             "script": "main.py"
         },
