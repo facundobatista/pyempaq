@@ -4,6 +4,8 @@
 
 """Unpacking functionality.."""
 
+import hashlib
+import importlib
 import json
 import logging
 import os
@@ -12,7 +14,6 @@ import platform
 import shutil
 import subprocess
 import sys
-import time
 import venv
 import zipfile
 from types import ModuleType
@@ -155,6 +156,29 @@ def restrictions_ok(version: ModuleType, restrictions: Dict[str, Any]) -> bool:
     return True
 
 
+def build_project_install_dir(zip_path: pathlib.Path, metadata: Dict[str, str]):
+    """Build the name of the directory where everything will be extracted."""
+    project_name = metadata["project_name"]
+
+    # get the first part of the hash of the file
+    hasher = hashlib.sha256()
+    with open(zip_path, "rb") as fh:
+        while True:
+            data = fh.read(65536)
+            hasher.update(data)
+            if not data:
+                break
+    file_hash_partial = hasher.hexdigest()[:20]
+
+    # Python details
+    py_impl = platform.python_implementation().lower()
+    py_version = ".".join(platform.python_version_tuple()[:2])
+    py_magic = importlib.util.MAGIC_NUMBER.strip().decode("ascii")
+
+    name = f"{project_name}-{file_hash_partial}-{py_impl}.{py_version}.{py_magic}"
+    return name
+
+
 def run():
     """Run the unpacker."""
     log("PyEmpaq start")
@@ -179,8 +203,7 @@ def run():
     log("Temp base dir: %r", str(pyempaq_dir))
 
     # create a temp dir and extract the project there
-    timestamp = time.strftime("%Y%m%d%H%M%S", time.gmtime(pyempaq_filepath.stat().st_ctime))
-    project_dir = pyempaq_dir / "{}-{}".format(metadata["project_name"], timestamp)
+    project_dir = pyempaq_dir / build_project_install_dir(pyempaq_filepath, metadata)
     original_project_dir = project_dir / "orig"
     venv_requirements = [original_project_dir / fname for fname in metadata["requirement_files"]]
     setup_project_directory(zf, project_dir, venv_requirements)
