@@ -5,7 +5,6 @@
 """Unpacker tests."""
 
 import hashlib
-import importlib
 import os
 import platform
 import zipfile
@@ -291,6 +290,7 @@ def test_installdirname_complete(mocker, tmp_path):
     """Check the name is properly built."""
     mocker.patch("platform.python_implementation", return_value="PyPy")
     mocker.patch("platform.python_version_tuple", return_value=("3", "18", "7alpha"))
+    mocker.patch("pyempaq.unpacker.MAGIC_NUMBER", "xyz")
 
     zip_path = tmp_path / "somestuff.zip"
     content = b"some content to be hashed"
@@ -301,5 +301,4 @@ def test_installdirname_complete(mocker, tmp_path):
 
     dirname = build_project_install_dir(zip_path, fake_metadata)
 
-    magic = importlib.util.MAGIC_NUMBER.strip().decode("ascii")  # scared to patch this one
-    assert dirname == f"testproj-{content_hash[:20]}-pypy.3.18.{magic}"
+    assert dirname == f"testproj-{content_hash[:20]}-pypy.3.18.xyz"

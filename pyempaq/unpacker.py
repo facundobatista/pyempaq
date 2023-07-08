@@ -29,6 +29,10 @@ PROJECT_VENV_DIR = "project_venv"
 # the file name to flag that the project setup completed successfully
 COMPLETE_FLAG_FILE = "complete.flag"
 
+# the real magic number is a byte sequence with "\r\n" at the end; it's built here
+# so it's easily patchable by tests
+MAGIC_NUMBER = importlib.util.MAGIC_NUMBER[:-2].hex()
+
 # setup logging
 logger = logging.getLogger()
 handler = logging.StreamHandler()
@@ -173,9 +177,8 @@ def build_project_install_dir(zip_path: pathlib.Path, metadata: Dict[str, str]):
     # Python details
     py_impl = platform.python_implementation().lower()
     py_version = ".".join(platform.python_version_tuple()[:2])
-    py_magic = importlib.util.MAGIC_NUMBER.strip().decode("ascii")
 
-    name = f"{project_name}-{file_hash_partial}-{py_impl}.{py_version}.{py_magic}"
+    name = f"{project_name}-{file_hash_partial}-{py_impl}.{py_version}.{MAGIC_NUMBER}"
     return name
 
 
