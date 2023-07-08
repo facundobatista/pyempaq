@@ -4,6 +4,7 @@
 
 """Unpacker tests."""
 
+import hashlib
 import os
 import platform
 import zipfile
@@ -19,6 +20,7 @@ import pyempaq.unpacker
 from pyempaq.unpacker import (
     PROJECT_VENV_DIR,
     build_command,
+    build_project_install_dir,
     restrictions_ok,
     run_command,
     setup_project_directory,
@@ -291,3 +293,24 @@ def test_enforcerestrictions_pythonversion_good_comparison(logs):
     """Enforce minimum python version using a proper comparison, not strings."""
     ok = restrictions_ok(version, {"minimum_python_version": "3.0009"})
     assert ok is True
+
+
+# --- tests for the project install dir name
+
+
+def test_installdirname_complete(mocker, tmp_path):
+    """Check the name is properly built."""
+    mocker.patch("platform.python_implementation", return_value="PyPy")
+    mocker.patch("platform.python_version_tuple", return_value=("3", "18", "7alpha"))
+    mocker.patch("pyempaq.unpacker.MAGIC_NUMBER", "xyz")
+
+    zip_path = tmp_path / "somestuff.zip"
+    content = b"some content to be hashed"
+    zip_path.write_bytes(content)
+    content_hash = hashlib.sha256(content).hexdigest()
+
+    fake_metadata = {"foo": "bar", "project_name": "testproj"}
+
+    dirname = build_project_install_dir(zip_path, fake_metadata)
+
+    assert dirname == f"testproj-{content_hash[:20]}-pypy.3.18.xyz"

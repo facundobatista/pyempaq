@@ -6,4 +6,5 @@ logassert
 packaging
 pydocstyle
 pytest
+pytest-mock
 pytest-subprocess
