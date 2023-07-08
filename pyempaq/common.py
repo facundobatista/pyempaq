@@ -15,6 +15,10 @@ class ExecutionError(Exception):
     """The subprocess didn't finish ok."""
 
 
+class PackError(Exception):
+    """An error occurred while packing the project."""
+
+
 def find_venv_bin(basedir, exec_base):
     """Heuristics to find the pip executable in different platforms."""
     bin_dir = basedir / "bin"
