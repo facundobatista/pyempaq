@@ -14,6 +14,7 @@ import platform
 import shutil
 import subprocess
 import sys
+import time
 import venv
 import zipfile
 from types import ModuleType
@@ -91,6 +92,18 @@ def run_command(venv_bin_dir: pathlib.Path, cmd: List[str]) -> subprocess.Comple
     return subprocess.run(cmd, env=newenv)
 
 
+def get_file_hexdigest(filepath: pathlib.Path) -> str:
+    """Hash a file and return its hexdigest."""
+    hasher = hashlib.sha256()
+    with open(filepath, "rb") as fh:
+        while True:
+            data = fh.read(65536)
+            hasher.update(data)
+            if not data:
+                break
+    return hasher.hexdigest()
+
+
 def setup_project_directory(
     zf: zipfile.ZipFile,
     project_dir: pathlib.Path,
@@ -141,6 +154,17 @@ def setup_project_directory(
         log("Virtualenv setup finished")
     else:
         log("Skipping virtualenv (no requirements)")
+
+    # store unpacking metadata
+    zf_hash = get_file_hexdigest(zf.filename)
+    metadata = {
+        "pyz_path": str(zf.filename),
+        "pyz_hash": zf_hash,
+        "timestamp": time.time(),
+    }
+    (project_dir / "unpacking.json").write_text(json.dumps(metadata))
+
+    # save the flag for completeness
     (project_dir / COMPLETE_FLAG_FILE).touch()
 
 
@@ -170,14 +194,8 @@ def build_project_install_dir(zip_path: pathlib.Path, metadata: Dict[str, str]):
     project_name = metadata["project_name"]
 
     # get the first part of the hash of the file
-    hasher = hashlib.sha256()
-    with open(zip_path, "rb") as fh:
-        while True:
-            data = fh.read(65536)
-            hasher.update(data)
-            if not data:
-                break
-    file_hash_partial = hasher.hexdigest()[:20]
+    hexdigest = get_file_hexdigest(zip_path)
+    file_hash_partial = hexdigest[:20]
 
     # Python details
     py_impl = platform.python_implementation().lower()
