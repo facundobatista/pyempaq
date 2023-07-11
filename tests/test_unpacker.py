@@ -5,8 +5,10 @@
 """Unpacker tests."""
 
 import hashlib
+import json
 import os
 import platform
+import time
 import zipfile
 from pathlib import Path
 from subprocess import CompletedProcess
@@ -235,6 +237,31 @@ def test_projectdir_requirements(tmp_path, logs):
     assert "Creating payload virtualenv" in logs.info
     assert Exact(f"Installing dependencies: {install_command}") in logs.info
     assert "Virtualenv setup finished" in logs.info
+
+
+def test_projectdir_metadata(tmp_path, logs):
+    """Project directory without special requirements."""
+    # fake a compressed project
+    compressed_project = tmp_path / "project.zip"
+    with zipfile.ZipFile(compressed_project, "w") as zf:
+        zf.writestr("fake_file", b"fake content")
+
+    # get its hash
+    zipfile_hash = hashlib.sha256(compressed_project.read_bytes()).hexdigest()
+
+    # unpack
+    zf = zipfile.ZipFile(compressed_project)
+    new_dir = tmp_path / "new_dir"
+    before_timestamp = time.time()
+    setup_project_directory(zf, new_dir, [])
+    after_timestamp = time.time()
+
+    # check metadata file
+    unpack_metadata = json.loads((new_dir / "unpacking.json").read_text())
+    assert unpack_metadata["pyz_path"] == str(compressed_project)
+    assert unpack_metadata["pyz_hash"] == zipfile_hash
+    stored_timestamp = unpack_metadata["timestamp"]
+    assert before_timestamp < stored_timestamp < after_timestamp
 
 
 # --- tests for enforcing the unpacking restrictions
