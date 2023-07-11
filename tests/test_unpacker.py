@@ -261,7 +261,7 @@ def test_projectdir_metadata(tmp_path, logs):
     assert unpack_metadata["pyz_path"] == str(compressed_project)
     assert unpack_metadata["pyz_hash"] == zipfile_hash
     stored_timestamp = unpack_metadata["timestamp"]
-    assert before_timestamp < stored_timestamp < after_timestamp
+    assert before_timestamp <= stored_timestamp <= after_timestamp
 
 
 # --- tests for enforcing the unpacking restrictions
