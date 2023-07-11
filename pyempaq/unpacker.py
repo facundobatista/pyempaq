@@ -47,15 +47,17 @@ log = logger.info
 
 
 class FatalError(Exception):
-
-    class ReturnCode(enum.IntEnum):
-        restrictions_not_met = 64
-
     """Error that will terminate the unpacking.
 
     This is never shown to the user, but the overall process will exit with
     the indicated return code.
     """
+
+    class ReturnCode(enum.IntEnum):
+        """Codes that the unpacker may return."""
+
+        restrictions_not_met = 64
+
     def __init__(self, code):
         self.returncode = code
         super().__init__("")
@@ -179,10 +181,10 @@ def setup_project_directory(
     (project_dir / COMPLETE_FLAG_FILE).touch()
 
 
-def restrictions_ok(version: ModuleType, restrictions: Dict[str, Any]) -> bool:
-    """Enforce the unpacking restrictions, if any; return True if all ok to continue."""
+def enforce_restrictions(version: ModuleType, restrictions: Dict[str, Any]) -> bool:
+    """Enforce the unpacking restrictions, if any; raise a fatal error if they are not met."""
     if not restrictions:
-        return True
+        return
     ignored_restrictions = os.environ.get("PYEMPAQ_IGNORE_RESTRICTIONS", "").split(",")
 
     mpv = restrictions.get("minimum_python_version")
@@ -195,9 +197,7 @@ def restrictions_ok(version: ModuleType, restrictions: Dict[str, Any]) -> bool:
                 logger.info("(ignored) " + msg, mpv)
             else:
                 logger.error(msg, mpv)
-                return False
-
-    return True
+                raise FatalError(FatalError.ReturnCode.restrictions_not_met)
 
 
 def build_project_install_dir(zip_path: pathlib.Path, metadata: Dict[str, str]):
@@ -232,8 +232,8 @@ def run():
     import platformdirs  # NOQA
     from packaging import version  # NOQA
 
-    if not restrictions_ok(version, metadata["unpack_restrictions"]):
-        exit(EXIT_CODES["restrictions_not_met"])
+    # check all restrictions are met
+    enforce_restrictions(version, metadata["unpack_restrictions"])
 
     pyempaq_dir = pathlib.Path(platformdirs.user_data_dir()) / 'pyempaq'
     pyempaq_dir.mkdir(parents=True, exist_ok=True)
@@ -258,4 +258,8 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    try:
+        rc = run()
+    except FatalError as error:
+        rc = error.returncode
+    exit(rc)
