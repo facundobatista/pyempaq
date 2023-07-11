@@ -4,6 +4,7 @@
 
 """Unpacking functionality.."""
 
+import enum
 import hashlib
 import importlib
 import json
@@ -30,11 +31,6 @@ PROJECT_VENV_DIR = "project_venv"
 # the file name to flag that the project setup completed successfully
 COMPLETE_FLAG_FILE = "complete.flag"
 
-# special exit codes returned by the unpacker
-EXIT_CODES = {
-    "restrictions_not_met": 64
-}
-
 # the real magic number is a byte sequence with "\r\n" at the end; it's built here
 # so it's easily patchable by tests
 MAGIC_NUMBER = importlib.util.MAGIC_NUMBER[:-2].hex()
@@ -48,6 +44,21 @@ handler.setLevel(0)
 logger.addHandler(handler)
 logger.setLevel(logging.ERROR if os.environ.get("PYEMPAQ_DEBUG") is None else logging.INFO)
 log = logger.info
+
+
+class FatalError(Exception):
+
+    class ReturnCode(enum.IntEnum):
+        restrictions_not_met = 64
+
+    """Error that will terminate the unpacking.
+
+    This is never shown to the user, but the overall process will exit with
+    the indicated return code.
+    """
+    def __init__(self, code):
+        self.returncode = code
+        super().__init__("")
 
 
 def get_python_exec(project_dir: pathlib.Path) -> pathlib.Path:
