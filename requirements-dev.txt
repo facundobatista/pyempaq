@@ -4,6 +4,7 @@ codespell
 flake8
 logassert
 packaging
+platformdirs
 pydocstyle
 pytest
 pytest-mock

@@ -57,6 +57,8 @@ class FatalError(Exception):
         """Codes that the unpacker may return."""
 
         restrictions_not_met = 64
+        unpack_basedir_missing = 65
+        unpack_basedir_notdir = 66
 
     def __init__(self, code):
         self.returncode = code
@@ -216,6 +218,29 @@ def build_project_install_dir(zip_path: pathlib.Path, metadata: Dict[str, str]):
     return name
 
 
+def get_base_dir(platformdirs: ModuleType) -> pathlib.Path:
+    """Get the base directory for all PyEmpaq installs.
+
+    If it's indicated by the user, it must exist and be a directory (less error prone
+    this way). If it's the default, this function ensures it is created.
+
+    It needs to receive the 'platformdirs' because it's imported from the builtin
+    virtualenv (not generically available).
+    """
+    custom_basedir = os.environ.get("PYEMPAQ_UNPACK_BASE_PATH")
+    if custom_basedir is None:
+        basedir = pathlib.Path(platformdirs.user_data_dir()) / 'pyempaq'
+        basedir.mkdir(parents=True, exist_ok=True)
+    else:
+        basedir = pathlib.Path(custom_basedir)
+        if not basedir.exists():
+            raise FatalError(FatalError.ReturnCode.unpack_basedir_missing)
+        if not basedir.is_dir():
+            raise FatalError(FatalError.ReturnCode.unpack_basedir_notdir)
+
+    return basedir
+
+
 def run():
     """Run the unpacker."""
     log("PyEmpaq start")
@@ -235,9 +260,8 @@ def run():
     # check all restrictions are met
     enforce_restrictions(version, metadata["unpack_restrictions"])
 
-    pyempaq_dir = pathlib.Path(platformdirs.user_data_dir()) / 'pyempaq'
-    pyempaq_dir.mkdir(parents=True, exist_ok=True)
-    log("Temp base dir: %r", str(pyempaq_dir))
+    pyempaq_dir = get_base_dir(platformdirs)
+    log("Base directory: %r", str(pyempaq_dir))
 
     # create a temp dir and extract the project there
     project_dir = pyempaq_dir / build_project_install_dir(pyempaq_filepath, metadata)

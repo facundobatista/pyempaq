@@ -69,7 +69,7 @@ In this execution phase, the *unpacker* script put by PyEmpaq inside the packed 
 
 - check if the needed setup exists from a previous run; if yes, it will just run the payload project with almost no extra work; otherwise...
 
-- create a directory in the user data dir, and expand the `.pyz` file there
+- create a directory in the user data dir (or the indicated one, see below), and expand the `.pyz` file there
 
 - create a virtualenv in that new directory, and install all the payload's project dependencies
 
@@ -77,10 +77,13 @@ In this execution phase, the *unpacker* script put by PyEmpaq inside the packed 
 
 The verification that the unpacker does to see if has a reusable setup from the past is based on the `.pyz` timestamp; if it changed (a new file was distributed), a new setup will be created and used.
 
-PyEmpaq transparently returns the payload's exit code except when it must exit before the execution of the payload.
-In that case, it uses special codes equal or above 64, see below for their meaning.
+The environment variable `PYEMPAQ_UNPACK_BASE_PATH` can be used to specify in which base directory PyEmpaq will unpack the different projects. If indicated, the path must exist and be a directory.
+
+PyEmpaq transparently returns the payload's exit code except when it must exit before the execution of the payload. In that case, it uses special codes equal or above 64, meaning:
 
 - `64`: `unpack-restrictions` are not met on the final user's system.
+- `65`: the indicated `PYEMPAQ_UNPACK_BASE_PATH` does not exist
+- `66`: the indicated `PYEMPAQ_UNPACK_BASE_PATH` is not a directory
 
 
 ## Command line options

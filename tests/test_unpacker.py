@@ -14,6 +14,7 @@ from pathlib import Path
 from subprocess import CompletedProcess
 from unittest.mock import patch
 
+import platformdirs
 import pytest
 from logassert import Exact, NOTHING
 from packaging import version
@@ -25,6 +26,7 @@ from pyempaq.unpacker import (
     build_command,
     build_project_install_dir,
     enforce_restrictions,
+    get_base_dir,
     run_command,
     setup_project_directory,
 )
@@ -338,3 +340,46 @@ def test_installdirname_complete(mocker, tmp_path):
     dirname = build_project_install_dir(zip_path, fake_metadata)
 
     assert dirname == f"testproj-{content_hash[:20]}-pypy.3.18.xyz"
+
+
+def test_installdirname_custombase_default(mocker, tmp_path):
+    """The location of base directory is the default."""
+    mocker.patch.object(platformdirs, "user_data_dir", return_value=tmp_path)
+
+    dirpath = get_base_dir(platformdirs)
+    assert dirpath == tmp_path / "pyempaq"
+    assert dirpath.exists()
+    assert dirpath.is_dir()
+
+
+def test_installdirname_custombase_set_ok(monkeypatch, tmp_path):
+    """Set the location of base directory through the env var."""
+    custom_basedir = tmp_path / "testbase"
+    custom_basedir.mkdir()
+    monkeypatch.setenv("PYEMPAQ_UNPACK_BASE_PATH", str(custom_basedir))
+
+    dirpath = get_base_dir(platformdirs)
+    assert dirpath == custom_basedir
+    assert dirpath.exists()
+    assert dirpath.is_dir()
+
+
+def test_installdirname_custombase_missing(monkeypatch, tmp_path):
+    """The indicated base directory location does not exist."""
+    custom_basedir = tmp_path / "testbase"
+    monkeypatch.setenv("PYEMPAQ_UNPACK_BASE_PATH", str(custom_basedir))
+
+    with pytest.raises(FatalError) as cm:
+        get_base_dir(platformdirs)
+    assert cm.value.returncode is FatalError.ReturnCode.unpack_basedir_missing
+
+
+def test_installdirname_custombase_not_dir(monkeypatch, tmp_path):
+    """The indicated base directory location is not a directory."""
+    custom_basedir = tmp_path / "testbase"
+    custom_basedir.touch()  # not a directory!!
+    monkeypatch.setenv("PYEMPAQ_UNPACK_BASE_PATH", str(custom_basedir))
+
+    with pytest.raises(FatalError) as cm:
+        get_base_dir(platformdirs)
+    assert cm.value.returncode is FatalError.ReturnCode.unpack_basedir_notdir
