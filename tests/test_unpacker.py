@@ -365,7 +365,7 @@ def test_installdirname_custombase_set_ok(monkeypatch, tmp_path):
 
 
 def test_installdirname_custombase_missing(monkeypatch, tmp_path):
-    """The idicated base directory location does not exist."""
+    """The indicated base directory location does not exist."""
     custom_basedir = tmp_path / "testbase"
     monkeypatch.setenv("PYEMPAQ_UNPACK_BASE_PATH", str(custom_basedir))
 
@@ -375,7 +375,7 @@ def test_installdirname_custombase_missing(monkeypatch, tmp_path):
 
 
 def test_installdirname_custombase_not_dir(monkeypatch, tmp_path):
-    """The idicated base directory location is not a directory."""
+    """The indicated base directory location is not a directory."""
     custom_basedir = tmp_path / "testbase"
     custom_basedir.touch()  # not a directory!!
     monkeypatch.setenv("PYEMPAQ_UNPACK_BASE_PATH", str(custom_basedir))
