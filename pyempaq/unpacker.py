@@ -278,7 +278,7 @@ def run():
     proc = run_command(venv_bin_dir, cmd)
     log("Exit code: %s", proc.returncode)
     log("PyEmpaq done")
-    exit(proc.returncode)
+    return proc.returncode
 
 
 if __name__ == "__main__":
