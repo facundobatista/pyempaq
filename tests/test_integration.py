@@ -33,7 +33,7 @@ def _pack(tmp_path, monkeypatch, config_text):
     return packed_filepath
 
 
-def _run_pack(packed_filepath, basedir):
+def _run_pack(packed_filepath, basedir, *, extra_env=None):
     """Run the packed project in clean directory.
 
     Returns the process and the pack's final path.
@@ -43,12 +43,21 @@ def _run_pack(packed_filepath, basedir):
     cleandir.mkdir()
     new_path = packed_filepath.rename(cleandir / "testproject.pyz")
     os.chdir(cleandir)
+
+    # set the install basedir so the user real one is not used, and then any extra
+    # environment items
+    env = dict(os.environ)  # need to replicate original env because of Windows
+    env["PYEMPAQ_UNPACK_BASE_PATH"] = str(basedir)
+    if extra_env:
+        env.update(extra_env)
+
     cmd = [sys.executable, "testproject.pyz"]
     proc = subprocess.run(
         cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         universal_newlines=True,
+        env=env,
     )
     return proc, new_path
 
@@ -79,7 +88,7 @@ def test_basic_cycle_full(tmp_path, monkeypatch, expected_code):
         print("internal binary ok")
 
         import requests
-        assert "pyempaq" in requests.__file__
+        assert "testproject" in requests.__file__, requests.__file__
         print("virtualenv module ok")
         exit({expected_code})
     """))
@@ -221,3 +230,21 @@ def test_pack_exits_on_requirements_non_included(tmp_path, monkeypatch):
     ).encode()
     assert exc.value.returncode == 2
     assert error in exc.value.stderr
+
+
+def test_ephemeral_install_run_ok(tmp_path, monkeypatch):
+    """If ephemeral is indicated the project install should not be kept; run ok."""
+    projectpath = tmp_path / "fakeproject"
+    projectpath.mkdir()
+    (projectpath / "main.py").write_text("print('ok')")
+    conf = {
+        "name": "testproject",
+        "exec": {
+            "script": "main.py"
+        },
+    }
+    packed_filepath = _pack(projectpath, monkeypatch, yaml.safe_dump(conf))
+
+    _run_pack(packed_filepath, tmp_path, extra_env={"PYEMPAQ_EPHEMERAL": "1"})
+    project_install_dir = [d for d in tmp_path.iterdir() if d.name.startswith("testproject")]
+    assert not project_install_dir

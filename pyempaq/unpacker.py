@@ -123,6 +123,8 @@ def setup_project_directory(
     zf: zipfile.ZipFile,
     project_dir: pathlib.Path,
     venv_requirements: List[pathlib.Path],
+    *,
+    ephemeral=False,
 ):
     """Set up the project directory (if needed).
 
@@ -144,7 +146,8 @@ def setup_project_directory(
     """
     if project_dir.exists():
         if (project_dir / COMPLETE_FLAG_FILE).exists():
-            log("Reusing project dir %r", str(project_dir))
+            log_call = logger.warning if ephemeral else logger.info
+            log_call("Reusing project dir %r", str(project_dir))
             return
         log("Found incomplete project dir %r", str(project_dir))
         shutil.rmtree(project_dir)
@@ -267,7 +270,8 @@ def run():
     project_dir = pyempaq_dir / build_project_install_dir(pyempaq_filepath, metadata)
     original_project_dir = project_dir / "orig"
     venv_requirements = [original_project_dir / fname for fname in metadata["requirement_files"]]
-    setup_project_directory(zf, project_dir, venv_requirements)
+    ephemeral = os.environ.get("PYEMPAQ_EPHEMERAL")
+    setup_project_directory(zf, project_dir, venv_requirements, ephemeral=ephemeral)
 
     python_exec = get_python_exec(project_dir)
     os.chdir(original_project_dir)
@@ -277,8 +281,12 @@ def run():
     venv_bin_dir = python_exec.parent
     proc = run_command(venv_bin_dir, cmd)
     log("Exit code: %s", proc.returncode)
+
+    if ephemeral:
+        logger.info("Removing project install directory because ephemeral indicated.")
+        shutil.rmtree(project_dir)
     log("PyEmpaq done")
-    exit(proc.returncode)
+    return proc.returncode
 
 
 if __name__ == "__main__":

@@ -189,7 +189,7 @@ def test_projectdir_already_there_incomplete(tmp_path, logs):
     assert "Skipping virtualenv" in logs.info
 
 
-def test_projectdir_already_there_complete(tmp_path, logs):
+def test_projectdir_already_there_complete_normal(tmp_path, logs):
     """Don't do anything if project exists from before and is complete."""
     # just create the new directory and flag it as done
     new_dir = tmp_path / "new_dir"
@@ -201,6 +201,23 @@ def test_projectdir_already_there_complete(tmp_path, logs):
     setup_project_directory(zf, new_dir, [])
 
     assert "Reusing project dir '.*new_dir'" in logs.info
+    assert "Creating project dir" not in logs.info
+    assert "Skipping virtualenv" not in logs.info
+
+
+def test_projectdir_already_there_complete_ephemeral(tmp_path, logs):
+    """If project exists from before and is complete it's weird to be ephemeral."""
+    # just create the new directory and flag it as done
+    new_dir = tmp_path / "new_dir"
+    new_dir.mkdir()
+    (new_dir / "complete.flag").touch()
+
+    # run the setup, if tries to re-create it or uncompress the project (zf is None!) it will crash
+    zf = None
+    setup_project_directory(zf, new_dir, [], ephemeral=True)
+
+    assert "Reusing project dir '.*new_dir'" in logs.warning
+    assert "Reusing project dir" not in logs.info
     assert "Creating project dir" not in logs.info
     assert "Skipping virtualenv" not in logs.info
 
