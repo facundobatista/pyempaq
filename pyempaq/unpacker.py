@@ -274,6 +274,7 @@ def run():
     setup_project_directory(zf, project_dir, venv_requirements, ephemeral=ephemeral)
 
     python_exec = get_python_exec(project_dir)
+    original_process_directory = os.getcwd()
     os.chdir(original_project_dir)
 
     cmd = build_command(str(python_exec), metadata, sys.argv[1:])
@@ -284,6 +285,7 @@ def run():
 
     if ephemeral:
         logger.info("Removing project install directory because ephemeral indicated.")
+        os.chdir(original_process_directory)
         shutil.rmtree(project_dir)
     log("PyEmpaq done")
     return proc.returncode
