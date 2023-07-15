@@ -33,7 +33,7 @@ def _pack(tmp_path, monkeypatch, config_text):
     return packed_filepath
 
 
-def _run_pack(packed_filepath, basedir, *, extra_env=None):
+def _unpack(packed_filepath, basedir, *, extra_env=None, expected_rc=None):
     """Run the packed project in clean directory.
 
     Returns the process and the pack's final path.
@@ -59,6 +59,10 @@ def _run_pack(packed_filepath, basedir, *, extra_env=None):
         universal_newlines=True,
         env=env,
     )
+    if expected_rc is not None and proc.returncode != expected_rc:
+        print(f"TEST! Showing process output because process ended with {proc.returncode}")
+        for line in proc.stdout.split("\n"):
+            print("TEST!", repr(line))
     return proc, new_path
 
 
@@ -107,8 +111,8 @@ def test_basic_cycle_full(tmp_path, monkeypatch, expected_code):
         dependencies: [requests]
     """)
 
-    proc, _ = _run_pack(packed_filepath, tmp_path)
-    assert proc.returncode == expected_code, repr(proc.stdout)
+    proc, _ = _unpack(packed_filepath, tmp_path, expected_rc=expected_code)
+    assert proc.returncode == expected_code
     assert proc.stdout == textwrap.dedent("""\
         run ok
         internal module ok
@@ -136,11 +140,11 @@ def test_pyz_location(tmp_path, monkeypatch):
           script: ep.py
     """)
 
-    proc, run_path = _run_pack(packed_filepath, tmp_path)
-    output_lines = [line for line in proc.stdout.split("\n") if line]
-    assert proc.returncode == 0, "\n".join(output_lines)
+    proc, run_path = _unpack(packed_filepath, tmp_path, expected_rc=0)
+    assert proc.returncode == 0
 
     # verify output
+    output_lines = [line for line in proc.stdout.split("\n") if line]
     (exposed_pyz_path,) = output_lines
     assert exposed_pyz_path == str(run_path)
 
@@ -161,7 +165,7 @@ def test_restrictions_special_exit_code(tmp_path, monkeypatch):
         },
     }
     packed_filepath = _pack(projectpath, monkeypatch, yaml.safe_dump(conf))
-    proc, _ = _run_pack(packed_filepath, tmp_path)
+    proc, _ = _unpack(packed_filepath, tmp_path)
 
     assert proc.returncode == FatalError.ReturnCode.restrictions_not_met
     assert "Failed to comply with version restriction: need at least Python" in (proc.stdout or "")
@@ -190,7 +194,7 @@ def test_pack_with_requirements(tmp_path, monkeypatch, extraconf):
         **extraconf
     }
     packed_filepath = _pack(projectpath, monkeypatch, yaml.safe_dump(conf))
-    proc, _ = _run_pack(packed_filepath, tmp_path)
+    proc, _ = _unpack(packed_filepath, tmp_path)
 
     assert proc.returncode == 0
     assert proc.stdout.strip() == "ok"
@@ -245,6 +249,6 @@ def test_ephemeral_install_run_ok(tmp_path, monkeypatch):
     }
     packed_filepath = _pack(projectpath, monkeypatch, yaml.safe_dump(conf))
 
-    _run_pack(packed_filepath, tmp_path, extra_env={"PYEMPAQ_EPHEMERAL": "1"})
+    _unpack(packed_filepath, tmp_path, extra_env={"PYEMPAQ_EPHEMERAL": "1"}, expected_rc=0)
     project_install_dir = [d for d in tmp_path.iterdir() if d.name.startswith("testproject")]
     assert not project_install_dir
