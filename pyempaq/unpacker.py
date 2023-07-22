@@ -43,7 +43,6 @@ handler.setFormatter(fmt)
 handler.setLevel(0)
 logger.addHandler(handler)
 logger.setLevel(logging.ERROR if os.environ.get("PYEMPAQ_DEBUG") is None else logging.INFO)
-log = logger.info
 
 
 class FatalError(Exception):
@@ -149,29 +148,29 @@ def setup_project_directory(
             log_call = logger.warning if ephemeral else logger.info
             log_call("Reusing project dir %r", str(project_dir))
             return
-        log("Found incomplete project dir %r", str(project_dir))
+        logger.info("Found incomplete project dir %r", str(project_dir))
         shutil.rmtree(project_dir)
-        log("Removed old incomplete dir")
+        logger.info("Removed old incomplete dir")
 
-    log("Creating project dir %r", str(project_dir))
+    logger.info("Creating project dir %r", str(project_dir))
     project_dir.mkdir()
 
-    log("Extracting pyempaq content")
+    logger.info("Extracting pyempaq content")
     zf.extractall(path=project_dir)
 
     if venv_requirements:
-        log("Creating payload virtualenv")
+        logger.info("Creating payload virtualenv")
         venv_dir = project_dir / PROJECT_VENV_DIR
         venv.create(venv_dir, with_pip=True)
         pip_exec = find_venv_bin(venv_dir, "pip3")
         cmd = [str(pip_exec), "install"]
         for req_file in venv_requirements:
             cmd += ["-r", str(req_file)]
-        log("Installing dependencies: %s", cmd)
+        logger.info("Installing dependencies: %s", cmd)
         logged_exec(cmd)
-        log("Virtualenv setup finished")
+        logger.info("Virtualenv setup finished")
     else:
-        log("Skipping virtualenv (no requirements)")
+        logger.info("Skipping virtualenv (no requirements)")
 
     # store unpacking metadata
     zf_hash = get_file_hexdigest(zf.filename)
@@ -195,7 +194,7 @@ def enforce_restrictions(version: ModuleType, restrictions: Dict[str, Any]) -> b
     mpv = restrictions.get("minimum_python_version")
     if mpv is not None:
         current = platform.python_version()
-        log("Checking minimum Python version: indicated=%r current=%r", mpv, current)
+        logger.info("Checking minimum Python version: indicated=%r current=%r", mpv, current)
         if version.parse(mpv) > version.parse(current):
             msg = "Failed to comply with version restriction: need at least Python %s"
             if "minimum-python-version" in ignored_restrictions:
@@ -246,13 +245,13 @@ def get_base_dir(platformdirs: ModuleType) -> pathlib.Path:
 
 def run():
     """Run the unpacker."""
-    log("PyEmpaq start")
+    logger.info("PyEmpaq start")
 
     # parse pyempaq metadata from the zip file
     pyempaq_filepath = pathlib.Path.cwd() / sys.argv[0]
     zf = zipfile.ZipFile(pyempaq_filepath)
     metadata = json.loads(zf.read("metadata.json").decode("utf8"))
-    log("Loaded metadata: %s", metadata)
+    logger.info("Loaded metadata: %s", metadata)
 
     # load platformdirs and packaging from the builtin venv (not at top of file because
     # paths needed to be fixed)
@@ -264,7 +263,7 @@ def run():
     enforce_restrictions(version, metadata["unpack_restrictions"])
 
     pyempaq_dir = get_base_dir(platformdirs)
-    log("Base directory: %r", str(pyempaq_dir))
+    logger.info("Base directory: %r", str(pyempaq_dir))
 
     # create a temp dir and extract the project there
     project_dir = pyempaq_dir / build_project_install_dir(pyempaq_filepath, metadata)
@@ -278,16 +277,16 @@ def run():
     os.chdir(original_project_dir)
 
     cmd = build_command(str(python_exec), metadata, sys.argv[1:])
-    log("Running payload: %s", cmd)
+    logger.info("Running payload: %s", cmd)
     venv_bin_dir = python_exec.parent
     proc = run_command(venv_bin_dir, cmd)
-    log("Exit code: %s", proc.returncode)
+    logger.info("Exit code: %s", proc.returncode)
 
     if ephemeral:
         logger.info("Removing project install directory because ephemeral indicated.")
         os.chdir(original_process_directory)
         shutil.rmtree(project_dir)
-    log("PyEmpaq done")
+    logger.info("PyEmpaq done")
     return proc.returncode
 
 
