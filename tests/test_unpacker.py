@@ -12,7 +12,6 @@ import time
 import zipfile
 from pathlib import Path
 from subprocess import CompletedProcess
-from unittest.mock import patch
 
 import platformdirs
 import pytest
@@ -93,14 +92,14 @@ def test_buildcommand_script_sysargs():
 # --- tests for run_command
 
 
-def test_runcommand_with_env_path(monkeypatch):
+def test_runcommand_with_env_path(monkeypatch, mocker):
     """Run a command with a PATH in the env."""
     cmd = ["foo", "bar"]
     monkeypatch.setenv("TEST_PYEMPAQ", "123")
     monkeypatch.setenv("PATH", "previous-path")
 
-    with patch("subprocess.run") as run_mock:
-        run_command(Path("test-venv-dir"), cmd)
+    run_mock = mocker.patch("subprocess.run")
+    run_command(Path("test-venv-dir"), cmd)
 
     (call1,) = run_mock.call_args_list
     assert call1[0] == (cmd,)
@@ -109,14 +108,14 @@ def test_runcommand_with_env_path(monkeypatch):
     assert passed_env["PATH"] == "previous-path:test-venv-dir"
 
 
-def test_runcommand_no_env_path(monkeypatch):
+def test_runcommand_no_env_path(monkeypatch, mocker):
     """Run a command without a PATH in the env."""
     cmd = ["foo", "bar"]
     monkeypatch.setenv("TEST_PYEMPAQ", "123")
     monkeypatch.delenv("PATH")
 
-    with patch("subprocess.run") as run_mock:
-        run_command(Path("test-venv-dir"), cmd)
+    run_mock = mocker.patch("subprocess.run")
+    run_command(Path("test-venv-dir"), cmd)
 
     (call1,) = run_mock.call_args_list
     assert call1[0] == (cmd,)
@@ -125,25 +124,25 @@ def test_runcommand_no_env_path(monkeypatch):
     assert passed_env["PATH"] == "test-venv-dir"
 
 
-def test_runcommand_pyz_path():
+def test_runcommand_pyz_path(mocker):
     """Check the .pyz path is set."""
-    with patch("subprocess.run") as run_mock:
-        run_command(Path("test-venv-dir"), ["foo", "bar"])
+    run_mock = mocker.patch("subprocess.run")
+    run_command(Path("test-venv-dir"), ["foo", "bar"])
 
     (call1,) = run_mock.call_args_list
     passed_env = call1[1]["env"]
     assert passed_env["PYEMPAQ_PYZ_PATH"] == os.path.dirname(pyempaq.unpacker.__file__)
 
 
-def test_runcommand_returns_exit_code():
+def test_runcommand_returns_exit_code(mocker):
     """Check the completed process is returned."""
     cmd = ["foo", "bar"]
     code = 1
-    with patch("subprocess.run") as run_mock:
-        run_mock.return_value = CompletedProcess(cmd, code)
-        proc = run_command(Path("test-venv-dir"), cmd)
-        assert proc.args == cmd
-        assert proc.returncode == code
+    mocker.patch("subprocess.run", return_value=CompletedProcess(cmd, code))
+    proc = run_command(Path("test-venv-dir"), cmd)
+
+    assert proc.args == cmd
+    assert proc.returncode == code
 
 
 # --- tests for the project directory setup
@@ -222,7 +221,7 @@ def test_projectdir_already_there_complete_ephemeral(tmp_path, logs):
     assert "Skipping virtualenv" not in logs.info
 
 
-def test_projectdir_requirements(tmp_path, logs):
+def test_projectdir_requirements(tmp_path, logs, mocker):
     """Project with virtualenv requirements."""
     # fake a compressed project
     compressed_project = tmp_path / "project.zip"
@@ -239,10 +238,10 @@ def test_projectdir_requirements(tmp_path, logs):
     #   - the pip binary needs to be found inside that (mocked) virtualenv
     #   - the command uses that pip binary
     fake_pip_path = tmp_path / "pip"
-    with patch("venv.create") as mocked_venv_create:
-        with patch("pyempaq.unpacker.find_venv_bin", return_value=fake_pip_path) as mocked_find:
-            with patch("pyempaq.unpacker.logged_exec") as mocked_exec:
-                setup_project_directory(zf, new_dir, requirements)
+    mocked_venv_create = mocker.patch("venv.create")
+    mocked_find = mocker.patch("pyempaq.unpacker.find_venv_bin", return_value=fake_pip_path)
+    mocked_exec = mocker.patch("pyempaq.unpacker.logged_exec")
+    setup_project_directory(zf, new_dir, requirements)
 
     # check the calls to the mocked parts
     venv_dir = new_dir / PROJECT_VENV_DIR

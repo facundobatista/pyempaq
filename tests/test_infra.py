@@ -9,7 +9,6 @@ import itertools
 import os
 import re
 import subprocess
-from unittest.mock import patch
 
 import pydocstyle
 import pytest
@@ -38,12 +37,12 @@ def test_codespell():
         pytest.fail(msg, pytrace=False)
 
 
-def test_pep8():
+def test_pep8(mocker):
     """Verify all files are nicely styled."""
     python_filepaths = get_python_filepaths()
     style_guide = get_style_guide()
     fake_stdout = io.TextIOWrapper(io.BytesIO())
-    with patch("sys.stdout", fake_stdout):
+    with mocker.patch("sys.stdout", fake_stdout):
         report = style_guide.check_files(python_filepaths)
 
     # if flake8 didn't report anything, we're done

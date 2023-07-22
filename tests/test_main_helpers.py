@@ -9,7 +9,6 @@ import os
 import pathlib
 import socket
 import sys
-from unittest.mock import patch
 
 import pytest
 from logassert import Exact
@@ -26,25 +25,25 @@ from pyempaq.config_manager import DEFAULT_INCLUDE_LIST, load_config
     r"pip 21.2.1 from c:\hostedtool\windows\python\3.8.10\x64\lib\site-packages\pip (python 3.8)",
     "pip 20.1.1 from /usr/lib/python3/dist-packages/pip (python 3.8)",
 ])
-def test_get_pip_installed_useful(version):
+def test_get_pip_installed_useful(version, mocker):
     """An already installed pip is found."""
-    with patch("pyempaq.main.logged_exec") as mock_exec:
-        mock_exec.return_value = [version]
-        useful_pip = get_pip()
+    mocker.patch("pyempaq.main.logged_exec", return_value=[version])
+    useful_pip = get_pip()
     assert useful_pip == pathlib.Path("pip3")
 
 
 @pytest.mark.skipif(sys.platform.startswith("win"), reason="venv.create not working in GA Windows")
-def test_get_pip_failing_pip(tmp_path):
-    """An already installed pip is failing."""
-    with patch("pyempaq.main.logged_exec") as mock_exec:
-        with patch("tempfile.mkdtemp") as mock_tempdir:
-            mock_exec.side_effect = ExecutionError("pumba")
-            mock_tempdir.return_value = tmp_path
-            useful_pip = get_pip()
+def test_get_pip_failing_pip(tmp_path, mocker):
+    """An already installed pip is failing.
+
+    This test takes a while because it really creates a virtualenv.
+    """
+    mocker.patch("pyempaq.main.logged_exec", side_effect=ExecutionError("pumba"))
+    mocker.patch("tempfile.mkdtemp", return_value=tmp_path)
+    useful_pip = get_pip()
+
     # from inside a venv
-    assert (
-        useful_pip == tmp_path / "bin" / "pip3" or useful_pip == tmp_path / "Scripts" / "pip3.exe")
+    assert useful_pip in (tmp_path / "bin" / "pip3", tmp_path / "Scripts" / "pip3.exe")
 
 
 # -- tests for copy project
@@ -220,14 +219,14 @@ def test_copyproject_deeptree(src, dest):
     assert (dest / "dir2" / "dir3").exists()
 
 
-def test_copyproject_no_link_permission(src, dest):
+def test_copyproject_no_link_permission(src, dest, mocker):
     """The platform does not allow hard links."""
     src_file = src / "foo"
     src_file.write_text("test content")
     src_file.chmod(0o775)
 
-    with patch("os.link", side_effect=PermissionError("No you don't.")):
-        copy_project(src, dest, *DEFAULT_INC_EXC)
+    mocker.patch("os.link", side_effect=PermissionError("No you don't."))
+    copy_project(src, dest, *DEFAULT_INC_EXC)
 
     dest_file = dest / "foo"
     assert dest_file.is_file()
@@ -235,15 +234,15 @@ def test_copyproject_no_link_permission(src, dest):
     assert dest_file.stat().st_mode == src_file.stat().st_mode
 
 
-def test_copyproject_cross_device(src, dest):
+def test_copyproject_cross_device(src, dest, mocker):
     """Hard links cannot be done from one device to other."""
     src_file = src / "foo"
     src_file.write_text("test content")
     src_file.chmod(0o775)
 
     os_error = OSError(errno.EXDEV, os.strerror(errno.EXDEV))
-    with patch("os.link", side_effect=os_error):
-        copy_project(src, dest, *DEFAULT_INC_EXC)
+    mocker.patch("os.link", side_effect=os_error)
+    copy_project(src, dest, *DEFAULT_INC_EXC)
 
     dest_file = dest / "foo"
     assert dest_file.is_file()
