@@ -1,2 +1,2 @@
-PyYAML==6.0
+PyYAML==6.0.1
 pydantic==1.10.11
