@@ -1,6 +1,6 @@
-PyEmpaq 0.3 released
+PyEmpaq 0.4 released
 
-I'm happy to announce the release of PyEmpaq 0.3. 
+I'm happy to announce the release of PyEmpaq 0.4. 
 
 PyEmpaq is a simple but powerful Python packer to run any project with any virtualenv dependencies anywhwere.
 
@@ -13,21 +13,19 @@ Both the packaging and the execution are fully multiplatorm. This means that you
 
 What's new in this version?
 
-- Added 'include' and 'exclude' configuration options to have full control on what is inside the packed file.
+- Remove the installation if ephemeral behaviour is indicated ([related issue](https://github.com/facundobatista/pyempaq/issues/63))
 
-- Reuse the existing project directory only if it has a complete previous installation.
+- Allow to change the location where the files get unpacked ([related issue](https://github.com/facundobatista/pyempaq/issues/62))
 
-- Support the declaration of a minimum Python version to run the packed project.
+- Dump a file with unpacking related metadata in the project's directory ([related issue](https://github.com/facundobatista/pyempaq/issues/61))
 
-- Expose the .pyz path to the project being run.
+- Refactored the project's install directory name to include the Python version and more specifics ([related issue](https://github.com/facundobatista/pyempaq/issues/58))
 
-- Now used logging to expose messages to developer and users, with different verbosity levels.
+- Alert at pack time if any indicated requirement file is excluded from the included files.
 
-- Set up the proper PATH in the end command environment.
+- Log (and transmit when ending the unpacker itself) the return code of the executed project ([related issue](https://github.com/facundobatista/pyempaq/issues/64))
 
-- Added a -V/--version option to just print the version and exit.
-
-- Run tests (unit and integration) in Linux, MacOS and Windows.
+- Migrated to the `platformdirs` library to detect the user's data directory. ([related issue](https://github.com/facundobatista/pyempaq/issues/60))
 
 
 For more details please [check the documentation](https://pyempaq.readthedocs.io/en/latest/) (which includes demos and examples). The project [exists in Github](https://github.com/facundobatista/pyempaq/).
@@ -40,9 +38,9 @@ Enjoy,
 -- 
 
 
-Release de PyEmpaq 0.3
+Release de PyEmpaq 0.4
 
-Estoy muy contento de anunciar el release de PyEmpaq 0.3.
+Estoy muy contento de anunciar el release de PyEmpaq 0.4.
 
 PyEmpaq es un simple pero poderoso empaquetador de Python para correr cualquier proyecto en cualquier lado.con las dependencias que tenga mientras sean instalables en un entorno virtual.
 
@@ -55,21 +53,19 @@ Tanto el empaquetado como la ejecución son completamente multiplataformas. Esto
 
 ¿Qué hay de nuevo en esta versión?
 
-- Agregué opciones 'include' y 'exclude' en la configuración para tener el control completo del contenido del proyecto empaquetado.
+- Remueve la instalación si se indicó el comportamiento "efímero" ([issue relacionado](https://github.com/facundobatista/pyempaq/issues/63))
 
-- Ahora se reusa el directorio del proyecto existente sólo si se completó satisfactoriamente en una instalación previa.
+- Permite cambiar la ubicación donde los archivos son desempaquetados ([issue relacionado](https://github.com/facundobatista/pyempaq/issues/62))
 
-- Soporta declarar una versión mínima de Python para correr el proyecto empaquetado.
+- Graba un archivo con la metadata relacionada con el desempaquetado ([issue relacionado](https://github.com/facundobatista/pyempaq/issues/61))
 
-- Se expone el path del archivo `.pyz` al proyecto cuando se ejecuta.
+- Se refactoreó el nombre del directorio de instalación del proyecto para incluir la versión de Python y otras especificidades ([issue relacionado](https://github.com/facundobatista/pyempaq/issues/58))
 
-- Ahora usa logging internamente para exponer mensajes a desarrolladores y usuaries.
+- Alerta en tiempo de empaquetado si los archivos de requerimientos no se están incluyendo en el paquete.
 
-- Se configura correctamente el PATH en el entorno del comando final.
+- Loguea (y transmite cuando termina el unpacker mismo) el código de retorno del proyecto ejecutado ([issue relacionado](https://github.com/facundobatista/pyempaq/issues/64))
 
-- Agregué una opción -V/--version al empaquetador para solamente mostrar la versión y salir.
-
-- Los tests (de unidad e integración) se corren automáticamente en Linux, MacOS and Windows.
+- Se migró a usar la biblioteca `platformdirs` para detectar el directorio de datos del sistema ([issue relacionado](https://github.com/facundobatista/pyempaq/issues/60))
 
 
 Para más detalles revisen [la documentación](https://pyempaq.readthedocs.io/en/latest/) (que incluye demos y ejemplos). El proyecto [está en Github](https://github.com/facundobatista/pyempaq/).

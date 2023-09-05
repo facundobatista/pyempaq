@@ -344,7 +344,7 @@ def test_exec_entrypoint_format_bad_internal_type(tmp_path):
     with pytest.raises(ConfigError) as cm:
         load_config(config_file)
     assert cm.value.errors == [
-        "- 'exec.entrypoint[0]': str type expected",
+        "- 'exec.entrypoint[0]': Input should be a valid string",
     ]
 
 
@@ -360,7 +360,7 @@ def test_exec_entrypoint_format_bad_not_list(tmp_path):
     with pytest.raises(ConfigError) as cm:
         load_config(config_file)
     assert cm.value.errors == [
-        "- 'exec.entrypoint': value is not a valid list",
+        "- 'exec.entrypoint': Input should be a valid list",
     ]
 
 
@@ -391,7 +391,7 @@ def test_exec_default_args_format_bad_internal_type(tmp_path):
     with pytest.raises(ConfigError) as cm:
         load_config(config_file)
     assert cm.value.errors == [
-        "- 'exec.default-args[0]': str type expected",
+        "- 'exec.default-args[0]': Input should be a valid string",
     ]
 
 
@@ -408,7 +408,7 @@ def test_exec_default_args_format_bad_not_list(tmp_path):
     with pytest.raises(ConfigError) as cm:
         load_config(config_file)
     assert cm.value.errors == [
-        "- 'exec.default-args': value is not a valid list",
+        "- 'exec.default-args': Input should be a valid list",
     ]
 
 
@@ -442,6 +442,9 @@ def test_exec_xor_bad_combos(tmp_path, combo):
         fh.write("exec:\n")
         for line in combo:
             fh.write(f"    {line}\n")
+
+    for exec_entity in ("foo", "bar", "baz"):
+        (tmp_path / exec_entity).touch()
 
     with pytest.raises(ConfigError) as cm:
         load_config(config_file)
@@ -602,12 +605,13 @@ def test_unpacker_extra_fields(tmp_path):
         exec:
             entrypoint: ["foo", "bar"]
         unpack-restrictions:
+            minimum-python-version: "3.10"
             whatever: 42
     """)
     with pytest.raises(ConfigError) as cm:
         load_config(config_file)
     assert cm.value.errors == [
-        "- 'unpack-restrictions.whatever': extra fields not permitted",
+        "- 'unpack-restrictions.whatever': Extra inputs are not permitted",
     ]
 
 
@@ -638,5 +642,5 @@ def test_unpacker_minimumpython_string(tmp_path):
     with pytest.raises(ConfigError) as cm:
         load_config(config_file)
     assert cm.value.errors == [
-        "- 'unpack-restrictions.minimum-python-version': str type expected",
+        "- 'unpack-restrictions.minimum-python-version': Input should be a valid string",
     ]
