@@ -1,14 +1,15 @@
-# Copyright 2021 Facundo Batista
+# Copyright 2021-2023 Facundo Batista
 # Licensed under the GPL v3 License
 # For further info, check https://github.com/facundobatista/pyempaq
 
 """The configuration manager."""
 
 import pathlib
-from typing import List
+from typing import List, Optional
 
 import pydantic
 import yaml
+from typing_extensions import Annotated
 
 
 # base directory to which the different included paths may be relative from
@@ -33,73 +34,64 @@ class ConfigError(Exception):
         self.errors = errors
 
 
-class ModelConfigDefaults(
-        pydantic.BaseModel, extra=pydantic.Extra.forbid, frozen=True, validate_all=True):
+def _relative_path_validator(value):
+    """Constrained string which must be a relative path."""
+    if value is None:
+        return
+    value = pathlib.Path(value)
+
+    if value.is_absolute():
+        raise AssertionError("path must be relative")
+
+    # relative to the basedir
+    abs_path = _BASEDIR / value
+
+    if not abs_path.exists():
+        raise AssertionError(f"path {str(abs_path)!r} not found")
+
+    if _BASEDIR not in abs_path.resolve().parents:
+        raise AssertionError("relative path must be inside the packed project")
+
+    # return the relative path
+    return value
+
+
+def _relative_file_validator(value):
+    """Constrained relative path which must be a file."""
+    value = _relative_path_validator(value)
+    if value is None:
+        return
+
+    # relative to the basedir
+    abs_path = _BASEDIR / value
+
+    if not abs_path.is_file():
+        raise AssertionError(f"path {str(abs_path)!r} must be a file")
+
+    # return the relative path
+    return value
+
+
+RelativePath = Annotated[str, pydantic.AfterValidator(_relative_path_validator)]
+RelativeFile = Annotated[str, pydantic.AfterValidator(_relative_file_validator)]
+
+
+class ModelConfigDefaults(pydantic.BaseModel):
     """Define defaults for the BaseModel configuration."""
 
-
-class CustomStrictStr(pydantic.StrictStr):
-    """Generic class to create custom strict strings validated by pydantic."""
-
-    @classmethod
-    def __get_validators__(cls):
-        """Yield the relevant validators."""
-        yield from super().__get_validators__()
-        yield cls.custom_validate
-
-
-class RelativePath(CustomStrictStr):
-    """Constrained string which must be a relative path."""
-
-    @classmethod
-    def custom_validate(cls, value):
-        """Validate."""
-        if value is None:
-            return
-        value = pathlib.Path(value)
-
-        if value.is_absolute():
-            raise ValueError("path must be relative")
-
-        # relative to the basedir
-        abs_path = _BASEDIR / value
-
-        if not abs_path.exists():
-            raise ValueError(f"path {str(abs_path)!r} not found")
-
-        if _BASEDIR not in abs_path.resolve().parents:
-            raise ValueError("relative path must be inside the packed project")
-
-        # return the relative path
-        return value
-
-
-class RelativeFile(RelativePath):
-    """Constrained relative path which must be a file."""
-
-    @classmethod
-    def custom_validate(cls, value):
-        """Validate."""
-        value = super().custom_validate(value)
-        if value is None:
-            return
-
-        # relative to the basedir
-        abs_path = _BASEDIR / value
-
-        if not abs_path.is_file():
-            raise ValueError(f"path {str(abs_path)!r} must be a file")
-
-        # return the relative path
-        return value
+    model_config = dict(
+        extra="forbid",
+        frozen=True,
+        alias_generator=lambda s: s.replace("_", "-"),
+    )
 
 
 class Executor(ModelConfigDefaults, alias_generator=lambda s: s.replace("_", "-")):
     """Executor information."""
 
-    script: RelativeFile = None
-    module: RelativePath = None
-    entrypoint: List[pydantic.StrictStr] = None
+    script: Optional[RelativeFile] = None
+    module: Optional[RelativePath] = None
+    entrypoint: Optional[List[pydantic.StrictStr]] = None
     default_args: List[pydantic.StrictStr] = []
 
 
@@ -109,11 +101,7 @@ class UnpackRestrictions(ModelConfigDefaults, alias_generator=lambda s: s.replac
     minimum_python_version: pydantic.StrictStr = None
 
 
-class Config(
-    ModelConfigDefaults,
-    validate_all=False,
-    alias_generator=lambda s: s.replace("_", "-"),
-):
+class Config(ModelConfigDefaults):
     """Definition of PyEmpaq's configuration."""
 
     name: str
@@ -123,9 +111,9 @@ class Config(
     dependencies: List[str] = []
     include: List[str] = DEFAULT_INCLUDE_LIST
     exclude: List[str] = []
-    unpack_restrictions: UnpackRestrictions = None
+    unpack_restrictions: Optional[UnpackRestrictions] = None
 
-    @pydantic.validator("basedir")
+    @pydantic.field_validator("basedir")
     def ensure_basedir(cls, value):
         """Ensure that the basedir is valid, and store it to be used by other paths."""
         global _BASEDIR
@@ -138,23 +126,23 @@ class Config(
         _BASEDIR = value
 
         if not value.exists():
-            raise ValueError(f"path {str(value)!r} not found")
+            raise AssertionError(f"path {str(value)!r} not found")
         if not value.is_dir():
-            raise ValueError(f"path {str(value)!r} must be a directory")
+            raise AssertionError(f"path {str(value)!r} must be a directory")
         return value
 
-    @pydantic.validator("exec", pre=True)
+    @pydantic.field_validator("exec", mode="before")
     def validate_exec_subkeys(cls, values):
         """Check the exec subkeys."""
         # it must be one, and only one, of these...
         subkeys = ["script", "module", "entrypoint"]
-        count = sum(x in values for x in subkeys)
+        count = sum(key in values for key in subkeys)
         if count == 0:
             subkeys_str = ', '.join(repr(x) for x in subkeys)
-            raise ValueError(f"need at least one of these subkeys: {subkeys_str}")
+            raise AssertionError(f"need at least one of these subkeys: {subkeys_str}")
         if count > 1:
             subkeys_str = ', '.join(repr(x) for x in subkeys)
-            raise ValueError(f"only one of these subkeys is allowed: {subkeys_str}")
+            raise AssertionError(f"only one of these subkeys is allowed: {subkeys_str}")
         return values
 
 
@@ -172,7 +160,7 @@ def _format_pydantic_errors(errors):
                 loc_parts.append(str(part))
         location = ".".join(loc_parts)
 
-        message = error['msg'].strip()
+        message = error['msg'].strip().removeprefix("Assertion failed, ")
         formated_errors.append(f"- {location!r}: {message}")
 
     return formated_errors
@@ -203,8 +191,8 @@ def load_config(path):
         content["basedir"] = configpath.parent
 
     try:
-        parsed = Config.parse_obj(content)
-    except pydantic.error_wrappers.ValidationError as error:
+        parsed = Config.model_validate(content)
+    except pydantic.ValidationError as error:
         raise ConfigError(errors=_format_pydantic_errors(error.errors()))
 
     return parsed
