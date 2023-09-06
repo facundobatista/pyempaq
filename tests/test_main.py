@@ -2,20 +2,92 @@
 # Licensed under the GPL v3 License
 # For further info, check https://github.com/facundobatista/pyempaq
 
-"""Tests for some main helpers."""
+"""Tests for main's pack and helpers."""
 
 import errno
 import os
 import pathlib
 import socket
 import sys
+import zipfile
 
 import pytest
 from logassert import Exact
 
-from pyempaq.main import get_pip, copy_project, prepare_metadata
+from pyempaq.main import get_pip, copy_project, prepare_metadata, pack
 from pyempaq.common import ExecutionError
 from pyempaq.config_manager import DEFAULT_INCLUDE_LIST, load_config
+
+
+# -- tests for pack
+
+def _build_config(tmp_path, content):
+    """Build, parse and return a config object."""
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text(content)
+    return load_config(config_file)
+
+
+def test_pack_sanity(mocker, tmp_path, monkeypatch):
+    """Sanity check of pack function.
+
+    Note that comprehensive testing of packing is mostly done on integration testing.
+    """
+    # working directory
+    work_dir = tmp_path / "worktemp"
+    work_dir.mkdir()
+    monkeypatch.chdir(work_dir)
+
+    # fake packing temp dir
+    pack_tmp_dir = tmp_path / "testtemp"
+    pack_tmp_dir.mkdir()
+    mocker.patch("tempfile.mkdtemp", return_value=str(pack_tmp_dir))
+
+    # fake a project source to be packed
+    project_src = tmp_path / "workingproject"
+    project_src.mkdir()
+    project_src_file_1 = project_src / "file1.txt"
+    project_src_file_1.write_text("file1")
+    project_src_script = project_src / "script.py"
+    project_src_script.write_text("superpython")
+    project_src_dir_1 = project_src / "subdir"
+    project_src_dir_1.mkdir()
+    project_src_file_2 = project_src_dir_1 / "file2.txt"
+    project_src_file_2.write_text("file2")
+
+    # the config
+    config = _build_config(tmp_path, f"""
+        name: testproject
+        basedir: {project_src}
+        exec:
+            script: script.py
+    """)
+
+    # run
+    pack(config)
+
+    # check the tmp dir was cleaned
+    assert not pack_tmp_dir.exists()
+
+    # open the created zip file and assert content
+    zf = zipfile.ZipFile(work_dir / "testproject.pyz")
+    assert {name.split("/")[0] for name in zf.namelist()} == {
+        'orig',  # the original project
+        '__main__.py',  # the zip entry point
+        'pyempaq',  # pyempaq's support for execution later
+        'metadata.json',  # metadata for ^ to work
+        'venv',  # dependencies also for ^
+    }
+
+    # original project data
+    assert zf.read("orig/file1.txt") == b"file1"
+    assert zf.read("orig/subdir/file2.txt") == b"file2"
+    assert zf.read("orig/script.py") == b"superpython"
+
+    # pyempaq's support
+    pyempaq_src = pathlib.Path(__file__).parent.parent / "pyempaq"
+    assert zf.read("__main__.py") == (pyempaq_src / "unpacker.py").read_bytes()
+    assert zf.read("pyempaq/common.py") == (pyempaq_src / "common.py").read_bytes()
 
 
 # -- tests for get pip

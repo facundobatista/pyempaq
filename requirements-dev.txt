@@ -9,3 +9,4 @@ pydocstyle
 pytest
 pytest-mock
 pytest-subprocess
+pytest-xdist
