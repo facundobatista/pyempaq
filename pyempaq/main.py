@@ -187,7 +187,7 @@ def prepare_metadata(origdir: pathlib.Path, config: Config):
 
 def pack(config):
     """Pack."""
-    project_root = Path(__file__).parent
+    pyempaq_source_root = Path(__file__).parent
     tmpdir = Path(tempfile.mkdtemp())
     logger.debug("Working in temp dir %r", str(tmpdir))
 
@@ -210,12 +210,12 @@ def pack(config):
     # copy the common module
     pyempaq_dir = tmpdir / "pyempaq"
     pyempaq_dir.mkdir()
-    common_src = project_root / "common.py"
+    common_src = pyempaq_source_root / "common.py"
     common_final_src = tmpdir / "pyempaq" / "common.py"
     shutil.copy(common_src, common_final_src)
 
     # copy the unpacker as the entry point of the zip
-    unpacker_src = project_root / "unpacker.py"
+    unpacker_src = pyempaq_source_root / "unpacker.py"
     unpacker_final_main = tmpdir / "__main__.py"
     shutil.copy(unpacker_src, unpacker_final_main)
 
