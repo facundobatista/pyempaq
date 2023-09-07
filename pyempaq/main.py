@@ -21,7 +21,13 @@ from pathlib import Path
 from typing import List
 
 from pyempaq import __version__
-from pyempaq.common import find_venv_bin, logged_exec, ExecutionError, PackError
+from pyempaq.common import (
+    ExecutionError,
+    PackError,
+    find_venv_bin,
+    get_disknode_hexdigest,
+    logged_exec,
+)
 from pyempaq.config_manager import load_config, ConfigError, Config
 
 
@@ -200,7 +206,6 @@ def pack(config):
     for path in config.requirements:
         if not (origdir / path).exists():
             missing_requirements.append(str(path))
-
     if missing_requirements:
         raise PackError(
             f"The indicated requirements {missing_requirements} are not included "
@@ -223,15 +228,36 @@ def pack(config):
     logger.debug("Building internal dependencies dir")
     venv_dir = tmpdir / "venv"
     pip = get_pip()
-    cmd = [pip, "install", *UNPACKER_DEPS, f"--target={venv_dir}"]
+    cmd = [pip, "install", "--no-compile", *UNPACKER_DEPS, f"--target={venv_dir}"]
     logged_exec(cmd)
+    shutil.make_archive(tmpdir / "venv2", "zip", tmpdir / "venv")
+    breakpoint()
 
+    # prepare and save metadata
     metadata = prepare_metadata(origdir, config)
     metadata_file = tmpdir / "metadata.json"
     with metadata_file.open("wt", encoding="utf8") as fh:
         json.dump(metadata, fh)
 
-    # create the zipfile
+    # hash the different parts and store the result in the metadata (and re-save it)
+    to_be_hashed = [
+        # dirs
+        "orig",
+        "pyempaq",
+        "venv",
+        # files
+        "__main__.py",
+        "metadata.json",
+    ]
+    digests = {}
+    for filepath in to_be_hashed:
+        digests[filepath] = get_disknode_hexdigest(Path(filepath))
+    print("======D", digests)
+    metadata["digests"] = digests
+    with metadata_file.open("wt", encoding="utf8") as fh:
+        json.dump(metadata, fh)
+
+    # create the zipfile with everything
     packed_filepath = f"{config.name}.pyz"
     zipapp.create_archive(tmpdir, packed_filepath)
 

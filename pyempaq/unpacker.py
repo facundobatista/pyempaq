@@ -5,7 +5,6 @@
 """Unpacking functionality.."""
 
 import enum
-import hashlib
 import importlib
 import json
 import logging
@@ -21,7 +20,7 @@ import zipfile
 from types import ModuleType
 from typing import List, Dict, Any
 
-from pyempaq.common import find_venv_bin, logged_exec
+from pyempaq.common import find_venv_bin, logged_exec, get_file_hexdigest
 
 
 # this is the directory for the NEW virtualenv created for the project (not the packed
@@ -104,18 +103,6 @@ def run_command(venv_bin_dir: pathlib.Path, cmd: List[str]) -> subprocess.Comple
         newenv["PATH"] = venv_bin_dir_str
     newenv["PYEMPAQ_PYZ_PATH"] = os.path.dirname(__file__)
     return subprocess.run(cmd, env=newenv)
-
-
-def get_file_hexdigest(filepath: pathlib.Path) -> str:
-    """Hash a file and return its hexdigest."""
-    hasher = hashlib.sha256()
-    with open(filepath, "rb") as fh:
-        while True:
-            data = fh.read(65536)
-            hasher.update(data)
-            if not data:
-                break
-    return hasher.hexdigest()
 
 
 def setup_project_directory(
@@ -242,6 +229,9 @@ def get_base_dir(platformdirs: ModuleType) -> pathlib.Path:
 
     return basedir
 
+def validate_payload(z
+    zf: zipfile.ZipFile,
+metadata: Dict[str, str]
 
 def run():
     """Run the unpacker."""
@@ -253,14 +243,15 @@ def run():
     metadata = json.loads(zf.read("metadata.json").decode("utf8"))
     logger.info("Loaded metadata: %s", metadata)
 
+    # check all restrictions are met and validate payload is not corrupted/tainted
+    enforce_restrictions(version, metadata["unpack_restrictions"])
+    validate_payload(zf, metadata)
+
     # load platformdirs and packaging from the builtin venv (not at top of file because
     # paths needed to be fixed)
     sys.path.insert(0, f"{pyempaq_filepath}/venv/")
     import platformdirs  # NOQA
     from packaging import version  # NOQA
-
-    # check all restrictions are met
-    enforce_restrictions(version, metadata["unpack_restrictions"])
 
     pyempaq_dir = get_base_dir(platformdirs)
     logger.info("Base directory: %r", str(pyempaq_dir))

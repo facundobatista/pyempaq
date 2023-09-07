@@ -1,10 +1,13 @@
-# Copyright 2022 Facundo Batista
+# Copyright 2022-2023 Facundo Batista
 # Licensed under the GPL v3 License
 # For further info, check https://github.com/facundobatista/pyempaq
 
 """Common functionality for packer and unpucker modules."""
 
+import hashlib
 import logging
+import os
+import pathlib
 import subprocess
 
 
@@ -52,3 +55,39 @@ def logged_exec(cmd):
     if retcode:
         raise ExecutionError(f"Command {cmd} ended with retcode {retcode}")
     return stdout
+
+
+def get_file_hexdigest(filepath: pathlib.Path) -> str:
+    """Hash a file and return its hexdigest."""
+    hasher = hashlib.sha256()
+    with open(filepath, "rb") as fh:
+        while True:
+            data = fh.read(65536)
+            hasher.update(data)
+            if not data:
+                break
+    return hasher.hexdigest()
+
+
+def get_disknode_hexdigest(filepath: pathlib.Path) -> str:
+    """Hash a disk node and return a hexdigest.
+
+    The disk node can be a file (simple hashing) or a directory (hash all the content
+    of all ordered files in the subtree).
+    """
+    if filepath.is_file():
+        all_files = [filepath]
+    else:
+        all_files = []
+        for basedir, dirnames, filenames in os.walk(filepath):
+            all_files.extend(os.path.join(basedir, filename) for filename in filenames)
+
+    hasher = hashlib.sha256()
+    for filepath in sorted(all_files):
+        with open(filepath, "rb") as fh:
+            while True:
+                data = fh.read(65536)
+                hasher.update(data)
+                if not data:
+                    break
+    return hasher.hexdigest()
