@@ -7,5 +7,5 @@
 # these two will be exported at `pyempaq` module level by __init__.py; also VERSION will
 # be parsed by setup.py without needing to import the module (at moments when the
 # version is needed but the infrastructure is not in place yet)
-VERSION = (0, 4, 0)
+VERSION = (0, 5, 0)
 __version__ = '.'.join([str(x) for x in VERSION])
