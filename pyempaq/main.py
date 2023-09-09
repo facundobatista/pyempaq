@@ -172,7 +172,7 @@ def prepare_metadata(origdir: pathlib.Path, config: Config):
         metadata["exec_value"] = str(config.exec.module)
     elif config.exec.entrypoint is not None:
         metadata["exec_style"] = "entrypoint"
-        metadata["exec_value"] = str(config.exec.entrypoint)
+        metadata["exec_value"] = config.exec.entrypoint
 
     # if dependencies, store them just as another requirement file (save it inside the project,
     # but using an unique name to not overwrite anything)

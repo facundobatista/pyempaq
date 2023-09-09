@@ -523,7 +523,7 @@ def test_metadata_base_exec_entrypoint(tmp_path):
         "project_name": "testproject",
         "exec_default_args": [],
         "exec_style": "entrypoint",
-        "exec_value": "['foo', 'bar']",
+        "exec_value": ['foo', 'bar'],
         "unpack_restrictions": {},
     }
 
