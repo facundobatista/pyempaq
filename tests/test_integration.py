@@ -252,3 +252,27 @@ def test_ephemeral_install_run_ok(tmp_path, monkeypatch):
     _unpack(packed_filepath, tmp_path, extra_env={"PYEMPAQ_EPHEMERAL": "1"}, expected_rc=0)
     project_install_dir = [d for d in tmp_path.iterdir() if d.name.startswith("testproject")]
     assert not project_install_dir
+
+
+def test_using_entrypoint(tmp_path, monkeypatch):
+    """Test full cycle using entrypoint as exec method."""
+    projectpath = tmp_path / "fakeproject"
+    projectpath.mkdir()
+    (projectpath / "main.py").write_text(textwrap.dedent("""
+        import sys
+        print(sys.argv[1])
+    """))
+    conf = {
+        "name": "testproject",
+        "basedir": str(projectpath),
+        "include": ["main.py"],
+        "exec": {
+            "entrypoint": ["main.py", "crazyarg"]
+        },
+    }
+
+    packed_filepath = _pack(projectpath, monkeypatch, yaml.safe_dump(conf))
+    proc, _ = _unpack(packed_filepath, tmp_path)
+
+    assert proc.returncode == 0
+    assert proc.stdout.strip() == "crazyarg"
