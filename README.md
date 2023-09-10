@@ -227,6 +227,23 @@ You should see the project's reportings that we mentioned above (**note**: these
 This shows that what you've run actually started, accessed the internal modules and other files, and imported correctly a custom-installed dependency.
 
 
+## How PyEmpaq relates to other similar tools?
+
+There are other tools that are similar in their work. The more known are [Shiv](https://pypi.org/project/shiv/) and [Pex](https://pypi.org/project/pex/).
+
+**Shiv** would create a fully self-contained Python zip app with all their dependencies included, which means that it ships not only your project but also the dependencies! this makes the resulting .pyz NOT multiplatform (unless your project and ALL your dependencies are pure Python...).
+
+On the other hand, PyEmpaq will create the virtualenv and install the needed dependencies the first time the .pyz is executed in the destination machine. This allows for example to pack a fully graphical desktop program that works with Qt, like the example shown above).
+
+A side detail of this is that we normally include dependencies in our programs, and those dependencies have sub-dependencies, etc. How sure are you that the whole set of dependencies and sub dependencies have a license that allows you to distribute them? Shiv will distribute them, PyEmpaq will not!
+
+**Pex** looks like it also includes the dependencies in the resulting file, but goes an extra mile pointing to the Python that was used to build the thing. So for example I built a .pex with Py3.10 and moved the file to a machine that has only 3.9, and it didn’t work, and both were Ubuntus! No multiplatform at all, no even mention to pack in Linux (once!) and run in Windows (or everywhere), as PyEmpaq allows to do.
+
+These both tools are "ahead of time" dense (larger size) archives that include application code and dependencies for a single target platform. Hermetic and deterministic installation. Something that you would also get if you [snap](https://ubuntu.com/core/services/guide/snaps-intro) your project. 
+
+On the other hand PyEmpaq is a sparse (smaller size) archive. It only includes the application code and at first-run will create and install the rest into a virtualenv. A bit like using pipx to install an application, except without needing to teach the end-user about pipx. It’s self installing. Non-hermetic and non-deterministic installation, but may not matter in practice.
+
+
 ## How to contribute to the project?
 
 Please check [the how to contribute](https://github.com/facundobatista/pyempaq/blob/main/CONTRIBUTING.md) instructions.
