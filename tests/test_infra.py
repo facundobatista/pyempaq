@@ -4,7 +4,6 @@
 
 """Infrastructure tests."""
 
-import io
 import itertools
 import os
 import re
@@ -37,26 +36,19 @@ def test_codespell():
         pytest.fail(msg, pytrace=False)
 
 
-def test_pep8(mocker):
+def test_pep8(capsys):
     """Verify all files are nicely styled."""
     python_filepaths = get_python_filepaths()
     style_guide = get_style_guide()
-    fake_stdout = io.TextIOWrapper(io.BytesIO())
-    with mocker.patch("sys.stdout", fake_stdout):
-        report = style_guide.check_files(python_filepaths)
+    report = style_guide.check_files(python_filepaths)
 
     # if flake8 didn't report anything, we're done
     if report.total_errors == 0:
         return
 
     # grab on which files we have issues
-    fake_stdout.seek(0)
-    flake8_issues = fake_stdout.read().split("\n")
-
-    if flake8_issues:
-        indented_issues = [f" - {issue}" for issue in flake8_issues if issue.strip()]
-        msg = "Please fix the following flake8 issues!\n" + "\n".join(indented_issues)
-        pytest.fail(msg, pytrace=False)
+    out, _ = capsys.readouterr()
+    pytest.fail(f"Please fix {report.total_errors} issue(s):\n{''.join(out)}", pytrace=False)
 
 
 def test_pep257():
