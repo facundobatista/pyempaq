@@ -73,7 +73,7 @@ def test_paths_relative_to_basedir_absolute(tmp_path):
     config_file = tmp_path / "config.yaml"
     config_file.write_text(f"""
         name: testproject
-        basedir: {tmp_path  / 'projectdir'}
+        basedir: {tmp_path / 'projectdir'}
         exec:
             script: script.py
     """)
