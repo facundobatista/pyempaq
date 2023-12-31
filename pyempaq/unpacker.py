@@ -35,6 +35,9 @@ COMPLETE_FLAG_FILE = "complete.flag"
 # so it's easily patchable by tests
 MAGIC_NUMBER = importlib.util.MAGIC_NUMBER[:-2].hex()
 
+# the environment variable to specify a different action
+ACTION_ENVVAR = "PYEMPAQ_ACTION"
+
 # setup logging
 logger = logging.getLogger()
 handler = logging.StreamHandler()
@@ -58,10 +61,47 @@ class FatalError(Exception):
         restrictions_not_met = 64
         unpack_basedir_missing = 65
         unpack_basedir_notdir = 66
+        bad_action = 67
 
     def __init__(self, code):
         self.returncode = code
         super().__init__("")
+
+
+# -- special PyEmpaq actions
+
+def special_action_info(pyempaq_dir, metadata):
+    """Provide information about different installations for the project."""
+    print("Base PyEmpaq directory:", pyempaq_dir)
+    subdirs = sorted(pyempaq_dir.glob(f"{metadata['project_name']}-*"))
+    if not subdirs:
+        print("No installation found!")
+        return
+
+    print("Current installations:")
+    for subdir in subdirs:
+        print("   ", subdir.name)
+
+
+def special_action_uninstall(pyempaq_dir, metadata):
+    """Remove all installations for the given project."""
+    subdirs = sorted(pyempaq_dir.glob(f"{metadata['project_name']}-*"))
+    if not subdirs:
+        print("No installation found!")
+        return
+
+    print("Removing installation:")
+    for subdir in subdirs:
+        print("   ", subdir.name)
+        shutil.rmtree(subdir)
+
+
+ACTION_CHOICES = {
+    "info": special_action_info,
+    "uninstall": special_action_uninstall,
+}
+
+# --
 
 
 def get_python_exec(project_dir: pathlib.Path) -> pathlib.Path:
@@ -264,6 +304,19 @@ def run():
 
     pyempaq_dir = get_base_dir(platformdirs)
     logger.info("Base directory: %r", str(pyempaq_dir))
+
+    indicated_action = os.environ.get(ACTION_ENVVAR)
+    if indicated_action is not None:
+        indicated_action = indicated_action.lower()
+        print(f"Running {indicated_action!r} action")
+        try:
+            func = ACTION_CHOICES[indicated_action]
+        except KeyError:
+            logger.error(
+                "Bad specified action %s=%r; valid options: %s",
+                ACTION_ENVVAR, indicated_action, ", ".join(ACTION_CHOICES.keys()))
+            raise FatalError(FatalError.ReturnCode.bad_action)
+        return func(pyempaq_dir, metadata)
 
     # create a temp dir and extract the project there
     project_dir = pyempaq_dir / build_project_install_dir(pyempaq_filepath, metadata)
