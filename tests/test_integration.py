@@ -5,6 +5,7 @@
 """Integration tests."""
 
 import os
+import shutil
 import subprocess
 import sys
 import textwrap
@@ -12,7 +13,7 @@ import textwrap
 import pytest
 import yaml
 
-from pyempaq.unpacker import FatalError
+from pyempaq.unpacker import FatalError, ACTION_ENVVAR, get_file_hexdigest
 
 
 def _pack(tmp_path, monkeypatch, config_text):
@@ -40,8 +41,9 @@ def _unpack(packed_filepath, basedir, *, extra_env=None, expected_rc=None):
     """
     # run the packed file in a clean directory
     cleandir = basedir / "cleandir"
-    cleandir.mkdir()
-    new_path = packed_filepath.rename(cleandir / "testproject.pyz")
+    cleandir.mkdir(exist_ok=True)
+    new_path = cleandir / "testproject.pyz"
+    shutil.copy(packed_filepath, new_path)
     os.chdir(cleandir)
 
     # set the install basedir so the user real one is not used, and then any extra
@@ -276,3 +278,73 @@ def test_using_entrypoint(tmp_path, monkeypatch):
 
     assert proc.returncode == 0
     assert proc.stdout.strip() == "crazyarg"
+
+
+# -- check special actions
+
+
+def test_action_info(tmp_path, monkeypatch):
+    """Use the special action 'info'."""
+    # set up a basic test project, with an entrypoint that shows access to internals
+    projectpath = tmp_path / "fakeproject"
+    entrypoint = projectpath / "ep.py"
+    entrypoint.parent.mkdir()
+    entrypoint.write_text("print(42)")
+
+    packed_filepath = _pack(tmp_path, monkeypatch, f"""
+        name: testproject
+        basedir: {projectpath}
+        exec:
+          script: ep.py
+    """)
+
+    # unpack it once so it's already installed
+    proc, run_path = _unpack(packed_filepath, tmp_path, expected_rc=0)
+    assert proc.returncode == 0
+
+    # run the action
+    extra_env = {ACTION_ENVVAR: "info"}
+    proc, run_path = _unpack(packed_filepath, tmp_path, expected_rc=0, extra_env=extra_env)
+    assert proc.returncode == 0
+
+    hexdigest = get_file_hexdigest(packed_filepath)
+    assert proc.stdout == textwrap.dedent(f"""\
+        Running 'info' action
+        Base PyEmpaq directory: {tmp_path}
+        Current installations:
+            testproject-{hexdigest[:20]}-cpython.3.10.6f0d
+    """)
+
+
+def test_action_uninstall(tmp_path, monkeypatch):
+    """Use the special action 'uninstall'."""
+    # set up a basic test project, with an entrypoint that shows access to internals
+    projectpath = tmp_path / "fakeproject"
+    entrypoint = projectpath / "ep.py"
+    entrypoint.parent.mkdir()
+    entrypoint.write_text("print(42)")
+
+    packed_filepath = _pack(tmp_path, monkeypatch, f"""
+        name: testproject
+        basedir: {projectpath}
+        exec:
+          script: ep.py
+    """)
+
+    # unpack it once so it's already installed
+    proc, run_path = _unpack(packed_filepath, tmp_path, expected_rc=0)
+    assert proc.returncode == 0
+    assert len(list(tmp_path.glob("testproject-*"))) == 1
+
+    # run the action
+    extra_env = {ACTION_ENVVAR: "uninstall"}
+    proc, run_path = _unpack(packed_filepath, tmp_path, expected_rc=0, extra_env=extra_env)
+    assert proc.returncode == 0
+    assert len(list(tmp_path.glob("testproject-*"))) == 0
+
+    hexdigest = get_file_hexdigest(packed_filepath)
+    assert proc.stdout == textwrap.dedent(f"""\
+        Running 'uninstall' action
+        Removing installation:
+            testproject-{hexdigest[:20]}-cpython.3.10.6f0d
+    """)

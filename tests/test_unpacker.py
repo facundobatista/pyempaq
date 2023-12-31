@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 import platform
+import textwrap
 import time
 import zipfile
 from pathlib import Path
@@ -28,6 +29,8 @@ from pyempaq.unpacker import (
     get_base_dir,
     run_command,
     setup_project_directory,
+    special_action_info,
+    special_action_uninstall,
 )
 
 
@@ -399,3 +402,60 @@ def test_installdirname_custombase_not_dir(monkeypatch, tmp_path):
     with pytest.raises(FatalError) as cm:
         get_base_dir(platformdirs)
     assert cm.value.returncode is FatalError.ReturnCode.unpack_basedir_notdir
+
+
+# --- tests for the special actions
+
+
+def test_specialaction_info_simple(tmp_path, capsys):
+    """A couple of installs to show."""
+    (tmp_path / "testproj-whatever-123").mkdir()
+    (tmp_path / "testproj-another one").mkdir()
+    special_action_info(tmp_path, {"project_name": "testproj"})
+
+    out, _ = capsys.readouterr()
+    assert out == textwrap.dedent(f"""\
+        Base PyEmpaq directory: {tmp_path}
+        Current installations:
+            testproj-another one
+            testproj-whatever-123
+    """)
+
+
+def test_specialaction_info_nothing(tmp_path, capsys):
+    """No install to show information."""
+    special_action_info(tmp_path, {"project_name": "testproj"})
+
+    out, _ = capsys.readouterr()
+    assert out == textwrap.dedent(f"""\
+        Base PyEmpaq directory: {tmp_path}
+        No installation found!
+    """)
+
+
+def test_specialaction_uninstall_simple(tmp_path, capsys):
+    """Some installs to remove."""
+    inst1 = tmp_path / "testproj-whatever-123"
+    inst1.mkdir()
+    inst2 = tmp_path / "testproj-another one"
+    inst2.mkdir()
+    special_action_uninstall(tmp_path, {"project_name": "testproj"})
+
+    out, _ = capsys.readouterr()
+    assert out == textwrap.dedent("""\
+        Removing installation:
+            testproj-another one
+            testproj-whatever-123
+    """)
+    assert not inst1.exists()
+    assert not inst2.exists()
+
+
+def test_specialaction_uninstall_nothing(tmp_path, capsys):
+    """No install to remove."""
+    special_action_uninstall(tmp_path, {"project_name": "testproj"})
+
+    out, _ = capsys.readouterr()
+    assert out == textwrap.dedent("""\
+        No installation found!
+    """)
