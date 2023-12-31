@@ -85,7 +85,7 @@ def special_action_info(pyempaq_dir, metadata):
 
 def special_action_uninstall(pyempaq_dir, metadata):
     """Remove all installations for the given project."""
-    subdirs = list(pyempaq_dir.glob(f"{metadata['project_name']}-*"))
+    subdirs = sorted(pyempaq_dir.glob(f"{metadata['project_name']}-*"))
     if not subdirs:
         print("No installation found!")
         return
