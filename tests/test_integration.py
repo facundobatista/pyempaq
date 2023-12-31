@@ -13,7 +13,7 @@ import textwrap
 import pytest
 import yaml
 
-from pyempaq.unpacker import FatalError, ACTION_ENVVAR, get_file_hexdigest
+from pyempaq.unpacker import FatalError, ACTION_ENVVAR, build_project_install_dir
 
 
 def _pack(tmp_path, monkeypatch, config_text):
@@ -297,6 +297,7 @@ def test_action_info(tmp_path, monkeypatch):
         exec:
           script: ep.py
     """)
+    install_dirname = build_project_install_dir(packed_filepath, {"project_name": "testproject"})
 
     # unpack it once so it's already installed
     proc, run_path = _unpack(packed_filepath, tmp_path, expected_rc=0)
@@ -307,12 +308,11 @@ def test_action_info(tmp_path, monkeypatch):
     proc, run_path = _unpack(packed_filepath, tmp_path, expected_rc=0, extra_env=extra_env)
     assert proc.returncode == 0
 
-    hexdigest = get_file_hexdigest(packed_filepath)
     assert proc.stdout == textwrap.dedent(f"""\
         Running 'info' action
         Base PyEmpaq directory: {tmp_path}
         Current installations:
-            testproject-{hexdigest[:20]}-cpython.3.10.6f0d
+            {install_dirname}
     """)
 
 
@@ -330,6 +330,7 @@ def test_action_uninstall(tmp_path, monkeypatch):
         exec:
           script: ep.py
     """)
+    install_dirname = build_project_install_dir(packed_filepath, {"project_name": "testproject"})
 
     # unpack it once so it's already installed
     proc, run_path = _unpack(packed_filepath, tmp_path, expected_rc=0)
@@ -342,9 +343,8 @@ def test_action_uninstall(tmp_path, monkeypatch):
     assert proc.returncode == 0
     assert len(list(tmp_path.glob("testproject-*"))) == 0
 
-    hexdigest = get_file_hexdigest(packed_filepath)
     assert proc.stdout == textwrap.dedent(f"""\
         Running 'uninstall' action
         Removing installation:
-            testproject-{hexdigest[:20]}-cpython.3.10.6f0d
+            {install_dirname}
     """)
