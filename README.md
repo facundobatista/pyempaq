@@ -47,7 +47,7 @@ There are some limitations:
 All this means that the most majority of the projects could be packed and run by PyEmpaq. If you have any ideas on how to overcome any of these limitations, let's talk!
 
 
-### How does this work?
+### How Does this Work?
 
 There are two phases: packing and execution. 
 
@@ -84,9 +84,21 @@ PyEmpaq transparently returns the payload's exit code except when it must exit b
 - `64`: `unpack-restrictions` are not met on the final user's system.
 - `65`: the indicated `PYEMPAQ_UNPACK_BASE_PATH` does not exist
 - `66`: the indicated `PYEMPAQ_UNPACK_BASE_PATH` is not a directory
+- `67`: the indicated `PYEMPAQ_ACTION` is not valid
 
 
-## Command line options
+### Special Actions
+
+When running the packed project, some special actions can be indicated through the environment variable `PYEMPAQ_ACTION`. Note that if it is specified, the special action will take place and the packed program itself will **not** be run.
+
+Current special actions:
+
+- `info`: Show information about installations of the given project
+
+- `uninstall`: Remove all installations of the given project
+
+
+## Command Line Options
 
 There is one mandatory parameter:
 
@@ -111,7 +123,7 @@ All that said, there is an special option `-V, --version` (new in v0.3) that if 
 > In the **execution phase**, if you have an environment variable `PYEMPAQ_DEBUG=1` it will show the Pyempaq log lines during the execution.
 
 
-## The configuration file
+## The Configuration File
 
 All the information that PyEmpaq needs to pack a project comes from a configuration file, which the developer would normally have in the project itself.
 
@@ -158,7 +170,7 @@ The following are examples of different configuration files (which were the ones
 - [the full desktop app](https://github.com/facundobatista/pyempaq/blob/main/examples/pyempaq-desktop-app.yaml?raw=True)
 
 
-## Context of the project being run
+## Context of the Project Being Run
 
 When the packed script/module/whatever is run in the unpacking phase, it will be executed inside the virtualenv with the needed requirements/dependencies (freshly created and installed or reused from a previous run).
 
@@ -167,7 +179,7 @@ Also, the following environment variable will be set:
 - `PYEMPAQ_PYZ_PATH`: the absolute path to the `.pyz` run by the user
 
 
-## How to install PyEmpaq
+## How to Install PyEmpaq
 
 Directly from PyPI:
 
@@ -184,7 +196,7 @@ If you have `fades` you don't even need to install pyempaq, just run it:
 In the future there will be more ways to install it. Please open an issue if you desire an installation method (extra points if you specify how), thanks!
 
 
-## Try packing an example project
+## Try Packing an Example Project
 
 PyEmpaq sources come with a small example project if you want to play a little packing it. Just a couple of dir/files under `examples/srcproject`:
 
@@ -227,7 +239,7 @@ You should see the project's reportings that we mentioned above (**note**: these
 This shows that what you've run actually started, accessed the internal modules and other files, and imported correctly a custom-installed dependency.
 
 
-## How PyEmpaq relates to other similar tools?
+## How PyEmpaq Relates to Other Similar Tools?
 
 There are other tools that are similar in their work. The more known are [Shiv](https://pypi.org/project/shiv/) and [Pex](https://pypi.org/project/pex/).
 
@@ -244,6 +256,6 @@ These both tools are "ahead of time" dense (larger size) archives that include a
 On the other hand PyEmpaq is a sparse (smaller size) archive. It only includes the application code and at first-run will create and install the rest into a virtualenv. A bit like using pipx to install an application, except without needing to teach the end-user about pipx. It’s self installing. Non-hermetic and non-deterministic installation, but may not matter in practice.
 
 
-## How to contribute to the project?
+## How to Contribute to the Project?
 
 Please check [the how to contribute](https://github.com/facundobatista/pyempaq/blob/main/CONTRIBUTING.md) instructions.
