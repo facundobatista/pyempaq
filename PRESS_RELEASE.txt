@@ -1,6 +1,6 @@
-PyEmpaq 0.5 released
+PyEmpaq 0.6 released
 
-I'm happy to announce the release of PyEmpaq 0.5. 
+I'm happy to announce the release of PyEmpaq 0.6. 
 
 PyEmpaq is a simple but powerful Python packer to run any project with any virtualenv dependencies anywhwere.
 
@@ -13,11 +13,11 @@ Both the packaging and the execution are fully multiplatorm. This means that you
 
 What's new in this version?
 
-- Fixed a bug when using `entrypoint` method of project execution when unpacking.
+- Incorporated two special actions: 'info' and 'uninstall' ([related issue](https://github.com/facundobatista/pyempaq/issues/59)).
 
-- Upgraded Pydantic dependency version to 2.x.x for handling configuration
+- Officially started supporting Python 3.12.
 
-- Minor improvements and new tests
+- Added a section in the README with comparison to other tools.
 
 For more details please [check the documentation](https://pyempaq.readthedocs.io/en/latest/) (which includes demos and examples). The project [exists in Github](https://github.com/facundobatista/pyempaq/).
 
@@ -30,14 +30,14 @@ Enjoy,
 
 EJEMPLO
 
-- Migrated to the `platformdirs` library to detect the user's data directory. ([related issue](https://github.com/facundobatista/pyempaq/issues/60))
+- Migrated to the `platformdirs` library to detect the user's data directory. ([related issue](https://github.com/facundobatista/pyempaq/issues/59))
 
 -- 
 
 
-Release de PyEmpaq 0.5
+Release de PyEmpaq 0.6
 
-Estoy muy contento de anunciar el release de PyEmpaq 0.5.
+Estoy muy contento de anunciar el release de PyEmpaq 0.6.
 
 PyEmpaq es un simple pero poderoso empaquetador de Python para correr cualquier proyecto en cualquier lado.con las dependencias que tenga mientras sean instalables en un entorno virtual.
 
@@ -50,11 +50,11 @@ Tanto el empaquetado como la ejecución son completamente multiplataformas. Esto
 
 ¿Qué hay de nuevo en esta versión?
 
-- Se arregló un problema al usar el método `entrypoint` cuando se ejecuta el proyecto en el unpacking.
+- Incorporamos dos acciones especiales: 'info' y 'uninstall' ([issue relacionado](https://github.com/facundobatista/pyempaq/issues/59)).
 
-- Se actualizó la dependencia Pydantic a 2.x.x para manejar la configuración
+- Comenzamos a soportar oficialmente Python 3.12.
 
-- Mejoras menores y tests nuevos
+- Agregamos una sección en el README con una pequeña comparación con otras herramientas.
 
 Para más detalles revisen [la documentación](https://pyempaq.readthedocs.io/en/latest/) (que incluye demos y ejemplos). El proyecto [está en Github](https://github.com/facundobatista/pyempaq/).
 
