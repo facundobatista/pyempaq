@@ -9,4 +9,4 @@ build:
     python: "3.12"
 
 mkdocs:
-  configuration: docs/mkdocs.yaml
+  configuration: mkdocs.yaml
