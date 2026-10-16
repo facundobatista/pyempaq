@@ -7,7 +7,7 @@ the release. The sequence of commands below should be good to copy and
 paste, but please pay attention to details!
 
 
-- tag `main` 
+- tag `main`
 
     git tag X.Y.Z
     git push --tags
@@ -21,10 +21,10 @@ paste, but please pay attention to details!
 - change the version number in `pyempaq/_version.py`
 
 
-- build the tarball 
+- build the tarball
 
     rm -rf dist/
-    python3 setup.py sdist bdist_wheel
+    fades -d build -m build
 
 
 - release in Github
@@ -42,7 +42,7 @@ paste, but please pay attention to details!
 
 - release to PyPI
 
-    fades -d twine -x twine upload --verbose dist/*
+    fades --check-updates -d twine -x twine upload --verbose dist/*
 
 
 - commit, push
