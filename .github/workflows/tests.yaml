@@ -32,3 +32,12 @@ jobs:
       - name: Run tests
         run: |
           python3 -m pytest
+
+  tests-required:
+    needs: run-tests
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check matrix result
+        run: |
+          # fail if any required test failed
